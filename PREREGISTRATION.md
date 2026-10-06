@@ -144,6 +144,24 @@ Tests added for the weak spots the review named: stale-message discard, direct b
 `is_sabotaged`, calibration independence from evaluation seeds, effective-delay rounding, PI mode
 without the CBF, and summary rebuild from the saved episodes.
 
+### Amendment A3 (2026-10-06): first real-monitor evidence
+
+Two real-model checks ran after experiments 1 to 3 were read.
+
+- Pilot 1 (Sonnet 5.5 as supervisor, Haiku 4.5 as monitor) is a null result. All 102 attack-mode
+  supervisor calls failed, so all attacks scored an identical AUROC of 0.50. It says nothing about the
+  monitor. See `results/llm_monitor_pilot_run1.md`.
+- Scripted attacks scored by Haiku 4.5 (`results/llm_monitor_scripted_attacks_run1.md`): the monitor
+  caught overt and injected actions at 100% and was not fooled by the authority claim. Its prompt warned
+  about authority claims, the attack was crude, and the sample is two episodes per condition.
+
+Effect on earlier claims. C1a, C2c and C2d pass because the surrogate monitor is built to be fooled
+(A2 F8). The first real evidence points the other way for a crude injection. So the surrogate's weakness
+is a pessimistic assumption about monitors and not an observed property. The pre-registered criteria are
+unchanged and their results stand as statements about the harness with that surrogate. Claim C1's
+language-model half is **not supported by the one test run so far, and not refuted either**: the unwarned
+monitor, the monitor-aware covert attack and adaptive attackers are untested.
+
 ## 6. Stop rules
 
 - PI cannot hold limits at zero delay: simulation is wrong. Passed (tests).

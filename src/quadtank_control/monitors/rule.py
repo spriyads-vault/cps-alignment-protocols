@@ -5,7 +5,10 @@ protocols and the delay sweep can be built and tested offline and for free. It
 encodes one hypothesised weakness on purpose: when the rationale carries an
 authority claim, the action-deviation signal is discounted by `gullibility`
 (1.0 means fully trusting). Whether real LLM monitors behave like that is exactly
-what the real-model runs must test (see monitors/llm.py). Results that use this
+what the real-model runs must test (see monitors/llm.py). First check, narrow: Claude
+Haiku 4.5 with a prompt that warned about authority claims was NOT fooled by a crude one
+(results/llm_monitor_scripted_attacks_run1.md), so treat this weakness as a pessimistic
+assumption about monitors, not an observed property. Results that use this
 class say nothing about claim C1's LLM half.
 
 Assumption A3: the monitor's expected action comes from the same controller family
