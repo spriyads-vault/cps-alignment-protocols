@@ -168,6 +168,12 @@ experiment 2 with a surrogate that ignores authority claims (`configs/exp2_unfoo
 defer-to-PI sabotage against the monitor-aware covert attacker falls from 30 of 30 to 0 of 30 on the
 minimum-phase plant. So C2c and C2d depend entirely on the surrogate's built-in weakness.
 
+A first closed-loop run with Haiku 4.5 inside the protocols (`results/llm_monitor_protocol_run1.md`, 3 episodes
+per cell) agrees in direction. C2c holds: hybrid sabotaged 3 of 3 by the covert-aware attacker, because the
+monitor blocked only 39% of its decisions. C2d is contradicted by the point estimate: defer-to-PI sabotaged 0 of
+3, but 3 episodes cannot reject a rate of 0.5. The protocols used different false-alarm thresholds (1% against
+5%), so the comparison is confounded and a matched rerun is needed.
+
 ## 6. Stop rules
 
 - PI cannot hold limits at zero delay: simulation is wrong. Passed (tests).
