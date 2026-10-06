@@ -1,4 +1,8 @@
-"""The steppable environment must reproduce run_episode exactly."""
+"""Stepping EpisodeEnv by hand must match run_episode, which is now built on it.
+
+This checks the driver contract (reset order, supervisor rng). The behavioural guard against
+the pre-refactor simulation is tests/test_golden.py.
+"""
 
 import pytest
 

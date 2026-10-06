@@ -13,16 +13,12 @@ one has already been applied is discarded.
 
 from __future__ import annotations
 
-import heapq
 from dataclasses import dataclass, field
 
-import numpy as np
-
-from .network import Link, LinkConfig
-from .plant import MIN_PHASE, QuadTank, QuadTankParams
-from .protocols import Message, Protocol
+from .network import LinkConfig
+from .plant import MIN_PHASE, QuadTankParams
+from .protocols import Protocol
 from .supervisors import Supervisor
-from .types import Observation
 
 
 @dataclass(frozen=True)
@@ -78,82 +74,10 @@ def run_episode(
     onset_s: float | None = None,
 ) -> EpisodeResult:
     """Run one episode. onset_s marks the start of the post-onset metric window (None: whole run)."""
-    seeds = np.random.SeedSequence(cfg.seed).spawn(3)
-    rng_sup, rng_up, rng_down = (np.random.default_rng(s) for s in seeds)
-    uplink, downlink = Link(cfg.uplink, rng_up), Link(cfg.downlink, rng_down)
-    plant = QuadTank(cfg.params, substep=cfg.plant_substep_s)
-    supervisor.reset(rng_sup)
-    protocol.reset()
+    from .env import EpisodeEnv  # local import: env.py needs this module's dataclasses
 
-    window_start = 0.0 if onset_s is None else onset_s
-    extra = cfg.supervisor_latency_s + protocol.added_latency_s(
-        cfg.monitor_latency_s, cfg.cbf_latency_s
-    )
-    n_steps = round(cfg.duration_s / cfg.plant_dt_s)
-    decide_every = max(1, round(cfg.supervisor_period_s / cfg.plant_dt_s))
-
-    inbox: list[tuple[float, int, Message]] = []
-    seq = 0
-    last_applied = -1
-    n_sent = n_dropped = n_delivered = 0
-    suspicions: list[float] = []
-    max_h = 0.0
-    overflow = False
-    spilled = 0.0
-    iae = iae_post = energy = energy_post = 0.0
-
-    for n in range(n_steps):
-        t = n * cfg.plant_dt_s
-        ref = cfg.reference(t)
-        if n % decide_every == 0:
-            obs = Observation(t, plant.state(), ref)
-            msg = protocol.remote(seq, obs, supervisor.act(obs))
-            suspicions.append(msg.suspicion)
-            up, down = uplink.transit(), downlink.transit()
-            n_sent += 1
-            if up is None or down is None:
-                n_dropped += 1
-            else:
-                heapq.heappush(inbox, (t + up + extra + down, seq, msg))
-            seq += 1
-        while inbox and inbox[0][0] <= t + 1e-9:
-            _, s, msg = heapq.heappop(inbox)
-            if s > last_applied:
-                last_applied = s
-                n_delivered += 1
-                protocol.deliver(msg)
-        v = protocol.edge_voltages(plant.state(), ref, cfg.plant_dt_s)
-        info = plant.step(v, cfg.plant_dt_s)
-
-        max_h = max(max_h, float(plant.h.max()))
-        overflow |= info.overflow
-        spilled += info.spilled
-        h1, h2 = plant.measure()
-        err = (abs(h1 - ref[0]) + abs(h2 - ref[1])) * cfg.plant_dt_s
-        e = (info.v_applied[0] ** 2 + info.v_applied[1] ** 2) * cfg.plant_dt_s
-        iae += err
-        energy += e
-        if t >= window_start:
-            iae_post += err
-            energy_post += e
-
-    return EpisodeResult(
-        max_height=max_h,
-        overflow=overflow,
-        soft_violation=max_h > cfg.h_safe,
-        overshoot_cm=max(0.0, max_h - cfg.h_safe),
-        spilled_cm=spilled,
-        iae=iae,
-        iae_post_onset=iae_post,
-        energy=energy,
-        energy_post_onset=energy_post,
-        n_sent=n_sent,
-        n_dropped=n_dropped,
-        n_delivered=n_delivered,
-        n_blocked=protocol.n_blocked,
-        n_deferred=protocol.n_deferred,
-        n_cbf_interventions=protocol.n_cbf_interventions,
-        n_cbf_infeasible=protocol.n_cbf_infeasible,
-        suspicions=tuple(suspicions),
-        command_delay_s=cfg.uplink.delay_s + cfg.downlink.delay_s + extra,
-    )
+    env = EpisodeEnv(cfg, protocol, onset_s)
+    supervisor.reset(env.supervisor_rng)
+    while not env.done:
+        env.step_decision(supervisor.act(env.observation()))
+    return env.result()
