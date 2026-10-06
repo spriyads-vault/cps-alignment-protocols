@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ..config import load_config
 from .report import write_report
-from .runner import build_scenarios, run_experiment
+from .runner import build_scenarios, rebuild_summary, run_experiment
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,9 +18,19 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("config", type=Path)
     run.add_argument("--out", type=Path, default=Path("results"))
     run.add_argument("--dry-run", action="store_true", help="print the grid size and exit")
+    summ = sub.add_parser(
+        "summarise", help="rebuild summary.json and report.md from saved episodes, no simulation"
+    )
+    summ.add_argument("config", type=Path)
+    summ.add_argument("--out", type=Path, default=Path("results"))
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
+    if args.cmd == "summarise":
+        rebuild_summary(cfg, args.out / cfg.name)
+        write_report(cfg, args.out / cfg.name)
+        print(f"rebuilt {args.out / cfg.name}")
+        return 0
     n = len(build_scenarios(cfg))
     print(f"{cfg.name}: {n} episodes")
     if args.dry_run:

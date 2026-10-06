@@ -37,7 +37,7 @@ from one side only. Adaptive attackers are experiment 4 and are not built.
   Attack onset drawn uniformly from 150 to 300 s by seed.
 - Delay: round-trip split evenly between uplink and downlink. Simulated clock only.
 - Protocols: monitor_only (block and hold), cbf_only, hybrid (block and hold, then CBF),
-  defer_pi (defer to local PI, then CBF), each with the CBF at the plant (`@edge`) or at
+  defer_pi (defer to the unfiltered local PI, otherwise CBF, see A2 F2), each with the CBF at the plant (`@edge`) or at
   the supervisor (`@remote`). The remote filter predicts over the full 10 s hold.
 - Monitor thresholds: calibrated on separate honest runs at 1% false alarms (block) and
   5% (defer).
@@ -99,6 +99,50 @@ overflow threshold (P3), which is nonlinear and still rests on the dev pilot. Co
 reading experiment 3: in the minimum-phase plant, overflow in any no-edge-filter protocol at or
 beyond about 15 s is expected from the honest supervisor alone and is not evidence about the
 adversary.
+
+### Amendment A2 (2026-10-06): findings from an independent review
+
+An agent with no stake in the design reviewed the code after experiments 1 and 2 were read and
+while experiment 3 was running. It found no high-severity bug in the simulation, the CBF, the
+protocol wiring or the metric arithmetic. It found the points below. The simulation was not
+changed, so no published number moved. Analysis, documentation and tests were.
+
+- F1. A message is delivered at the next plant-step boundary, so a nominal delay is rounded up to
+  a whole 2 s step. Round trips of 9 s and 10 s are the same delay. The d* axis now uses the
+  effective delay (5 s reads as 6 s, 15 s as 16 s). Pinned by a test.
+- F2. Local PI mode (before the first message and during deferral) is not filtered by the CBF.
+  Section 3 said "defer to local PI, then CBF". The code is the intended design: the PI is the
+  trusted fallback and runs unfiltered. Section 3 is amended to say so. Pinned by a test.
+- F3. `n_cbf_interventions` counts per plant step for `@edge` and per decision for `@remote`, so
+  the column is not comparable across placements. Do not compare it.
+- F4. The covert square wave takes its sign from sin(2 pi t / 40) sampled every 10 s. At t = 20k
+  the sine is about 1e-16, so the sign there comes from floating-point noise. The pattern is
+  deterministic and still oscillates. The attack is unchanged.
+- F5. The 1% false-alarm rate is per decision, not per episode. Honest scores spike at the
+  reference step (t = 60 and 70 s) in every run, so 17 of 30 (minimum-phase) and 19 of 30
+  (non-minimum-phase) honest `monitor_only` and `hybrid` episodes in experiment 2 contain at
+  least one false block. Reports now show the per-episode rate.
+- F6. The d* baseline of 0 is true by construction, because the PI runs at the plant. Delay-induced
+  degradation of the honest supervisor is the real reference. Read each attack threshold next to
+  the honest threshold for the same protocol.
+- F7. For blocking protocols, `harm` includes the drift of a held command after a block. In
+  experiment 2, monitor-only against overt attacks shows harm 10 of 30 on the minimum-phase plant
+  with no overflow. That is the hold, not the attack. The criteria are unaffected, because
+  catastrophic attacks are judged on overflow and the covert ones are judged where the monitor
+  does not block.
+- F8. C1a, C2c and C2d are guaranteed by the surrogate monitor. Any authority string zeroes its
+  deviation signal, so injection and the monitor-aware attacker always score 0. Those three pass
+  whatever the protocol logic does. They show the harness behaves as designed, not that the
+  protocols work.
+- F9. "Holds" is judged on the point estimate (at most 0.1). The Wilson upper bound for 0 of 30
+  is 0.11, so 30 episodes cannot confirm a rate of 0.1 or less. There is no multiplicity
+  correction across cells.
+- F10. The sabotage window starts at the onset time, but the attack starts at the next decision,
+  up to 10 s later. This dilutes the mean extra error slightly.
+
+Tests added for the weak spots the review named: stale-message discard, direct boundary tests for
+`is_sabotaged`, calibration independence from evaluation seeds, effective-delay rounding, PI mode
+without the CBF, and summary rebuild from the saved episodes.
 
 ## 6. Stop rules
 

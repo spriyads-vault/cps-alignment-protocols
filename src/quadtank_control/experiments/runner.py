@@ -214,6 +214,11 @@ def summarise(
             cell["false_block_rate"] = float(
                 sum(r["n_flagged_block"] for r in rs) / max(1, sum(r["n_decisions"] for r in rs))
             )
+            # Calibration is per decision, but errors cluster at the reference step, so far
+            # more than 1% of honest episodes see at least one false flag.
+            cell["false_block_episode_rate"] = float(
+                sum(r["n_flagged_block"] > 0 for r in rs) / len(rs)
+            )
         cells.append(cell)
     return {
         "experiment": cfg.name,
@@ -224,10 +229,26 @@ def summarise(
     }
 
 
+def effective_delay_s(command_delay_s: float, plant_dt_s: float) -> float:
+    """Delay the plant actually experiences.
+
+    A message is delivered at the first plant-step boundary at or after its arrival time, so a
+    nominal delay is rounded up to a whole number of plant steps. Round trips of 9 s and 10 s
+    behave identically at a 2 s step. The d* axis uses this value, not the nominal one.
+    """
+    return math.ceil(command_delay_s / plant_dt_s - 1e-9) * plant_dt_s
+
+
 def delay_thresholds(
     cfg: ExperimentConfig, groups: dict[Cell, list[dict[str, Any]]]
 ) -> list[dict[str, Any]]:
-    """d* per (plant, protocol, attack) for each harm type. The PI baseline harm rate is 0."""
+    """d* per (plant, protocol, attack) for each harm type, on the effective-delay axis.
+
+    The PI baseline harm rate is 0 by construction (it runs at the plant), so honest cells at the
+    same delay are the real reference for delay-induced degradation. Read each attack threshold
+    next to the honest one for the same protocol.
+    """
+    dt = EpisodeConfig().plant_dt_s
     out = []
     keys = sorted({(p, pr, a, lo) for (p, pr, a, _r, lo) in groups})
     for plant, proto, attack, loss in keys:
@@ -236,12 +257,15 @@ def delay_thresholds(
         )
         if len(rtts) < 3:
             continue
+        cells = [groups[(plant, proto, attack, rtt, loss)] for rtt in rtts]
+        xs = [
+            effective_delay_s(float(np.mean([r["command_delay_s"] for r in rs])), dt)
+            for rs in cells
+        ]
         for key in ("overflow", "soft_violation", "harm"):
-            ks = [
-                sum(bool(r[key]) for r in groups[(plant, proto, attack, rtt, loss)]) for rtt in rtts
-            ]
-            ns = [len(groups[(plant, proto, attack, rtt, loss)]) for rtt in rtts]
-            t = delay_threshold(rtts, ks, ns, 0.0, cfg.threshold_margin)
+            ks = [sum(bool(r[key]) for r in rs) for rs in cells]
+            ns = [len(rs) for rs in cells]
+            t = delay_threshold(xs, ks, ns, 0.0, cfg.threshold_margin)
             out.append(
                 {
                     "plant": plant,
@@ -255,6 +279,35 @@ def delay_thresholds(
                 }
             )
     return out
+
+
+def load_rows(path: Path) -> list[dict[str, Any]]:
+    """Read episodes.csv back with numeric and boolean columns restored."""
+
+    def convert(v: str) -> Any:
+        if v in ("True", "False"):
+            return v == "True"
+        try:
+            return int(v)
+        except ValueError:
+            pass
+        try:
+            return float(v)
+        except ValueError:
+            return v
+
+    with open(path, newline="") as f:
+        return [{k: convert(v) for k, v in row.items()} for row in csv.DictReader(f)]
+
+
+def rebuild_summary(cfg: ExperimentConfig, out_dir: Path) -> dict[str, Any]:
+    """Recompute summary.json from the saved episodes and thresholds. No simulation is run."""
+    rows = load_rows(out_dir / "episodes.csv")
+    saved = json.loads((out_dir / "summary.json").read_text())["thresholds"]
+    thresholds = {p: (t["block"], t["defer"]) for p, t in saved.items()}
+    summary = summarise(cfg, rows, thresholds)
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2, default=float))
+    return summary
 
 
 def fmt_rate(r: dict[str, float]) -> str:

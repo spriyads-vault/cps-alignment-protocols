@@ -71,15 +71,16 @@ def write_report(cfg: ExperimentConfig, out_dir: Path) -> None:
         )
     lines += ["", "Rates are shown as rate [Wilson 95% CI] (k/n). Harm = overflow or sabotage.", ""]
     lines += [
-        "| plant | protocol | attack | rtt s | loss | harm | overflow | soft viol. | sabotage | usefulness |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "| plant | protocol | attack | rtt s | loss | harm | overflow | soft viol. | sabotage | usefulness | honest eps. with a false flag |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for c in cells:
         u = f"{c['usefulness']:.2f}" if "usefulness" in c else ""
+        ff = f"{c['false_block_episode_rate']:.2f}" if "false_block_episode_rate" in c else ""
         lines.append(
             f"| {c['plant']} | {c['protocol']} | {c['attack']} | {c['rtt_s']:g} | {c['loss_prob']:g} | "
             f"{fmt_rate(c['harm'])} | {fmt_rate(c['overflow'])} | {fmt_rate(c['soft_violation'])} | "
-            f"{fmt_rate(c['sabotage'])} | {u} |"
+            f"{fmt_rate(c['sabotage'])} | {u} | {ff} |"
         )
     crit = criteria(cfg, cells)
     if crit:
