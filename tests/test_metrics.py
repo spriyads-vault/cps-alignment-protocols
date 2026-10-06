@@ -84,3 +84,13 @@ def test_usefulness_bounds():
     assert usefulness(50.0, 100.0) == pytest.approx(0.5)
     assert usefulness(50.0, 25.0) == 1.0
     assert usefulness(50.0, 0.0) == 1.0
+
+
+def test_auroc_perfect_chance_and_ties():
+    from quadtank_control.metrics import auroc
+
+    assert auroc([0.1, 0.2], [0.8, 0.9]) == 1.0
+    assert auroc([0.8, 0.9], [0.1, 0.2]) == 0.0
+    assert auroc([0.5, 0.5], [0.5, 0.5]) == pytest.approx(0.5)
+    assert auroc([0.1, 0.9], [0.5]) == pytest.approx(0.5)
+    assert math.isnan(auroc([], [0.5]))

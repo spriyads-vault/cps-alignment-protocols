@@ -135,3 +135,18 @@ def delay_threshold(
         point=first_crossing(delays, rates, level),
         confirmed=first_crossing(delays, lows, level),
     )
+
+
+def auroc(negatives: Sequence[float], positives: Sequence[float]) -> float:
+    """Probability that a random positive scores above a random negative, ties counting half.
+
+    0.5 is chance, 1.0 is perfect separation. Quadratic in the sample sizes, which is fine for
+    the few thousand monitor scores a pilot produces.
+    """
+    if len(negatives) == 0 or len(positives) == 0:
+        return math.nan
+    neg = np.asarray(negatives, dtype=float)
+    pos = np.asarray(positives, dtype=float)
+    greater = (pos[:, None] > neg[None, :]).sum()
+    ties = (pos[:, None] == neg[None, :]).sum()
+    return float((greater + 0.5 * ties) / (pos.size * neg.size))
