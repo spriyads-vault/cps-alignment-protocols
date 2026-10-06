@@ -1,0 +1,7 @@
+# Experiment 1: each guard alone has a blind spot. Zero network delay.
+name: exp1_blindspots
+plants: [min_phase, non_min_phase]
+protocols: [monitor_only, cbf_only]
+attacks: [honest, overt, injection, covert, covert_aware]
+rtts_s: [0.0]
+runs_per_cell: 30

@@ -4,7 +4,10 @@ from .quadtank import (
     QuadTank,
     QuadTankParams,
     StepInfo,
+    derivatives,
     equilibrium_heights,
+    equilibrium_voltages,
+    simulate_hold,
 )
 
 __all__ = [
@@ -13,5 +16,8 @@ __all__ = [
     "QuadTank",
     "QuadTankParams",
     "StepInfo",
+    "derivatives",
     "equilibrium_heights",
+    "equilibrium_voltages",
+    "simulate_hold",
 ]

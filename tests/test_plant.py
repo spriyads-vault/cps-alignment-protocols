@@ -89,3 +89,22 @@ def test_water_mass_balance(p):
         plant.step(v, dt)
     stored = float(np.dot(p.A, plant.h - h_start))
     assert stored == pytest.approx(inflow - outflow, rel=0.05, abs=2.0)
+
+
+@pytest.mark.parametrize("p", PLANTS)
+def test_equilibrium_voltages_round_trip(p):
+    from quadtank_control.plant import equilibrium_voltages
+
+    target = (p.h0[0] + 1.5, p.h0[1] - 1.0)
+    v = equilibrium_voltages(p, target)
+    h = equilibrium_heights(p, (float(v[0]), float(v[1])))
+    assert (h[0], h[1]) == pytest.approx(target, abs=1e-9)
+
+
+def test_simulate_hold_does_not_mutate_input():
+    from quadtank_control.plant import simulate_hold
+
+    h = np.array(MIN_PHASE.h0)
+    before = h.copy()
+    simulate_hold(MIN_PHASE, h, np.array([5.0, 5.0]), 10.0)
+    assert np.array_equal(h, before)

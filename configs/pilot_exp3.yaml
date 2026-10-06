@@ -1,0 +1,8 @@
+# Dev-seed pilot (seeds 0 to 4). Used to write the delay prediction into PREREGISTRATION.md.
+name: pilot_exp3
+plants: [min_phase, non_min_phase]
+protocols: [hybrid@remote, hybrid@edge, cbf_only@remote, cbf_only@edge, defer_pi@remote]
+attacks: [honest, overt, injection]
+rtts_s: [0.0, 5.0, 10.0, 20.0, 40.0, 60.0, 90.0]
+runs_per_cell: 6
+seed_base: 0

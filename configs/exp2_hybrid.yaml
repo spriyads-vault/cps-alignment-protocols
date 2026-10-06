@@ -1,0 +1,7 @@
+# Experiment 2: do the guards together hold? Zero network delay.
+name: exp2_hybrid
+plants: [min_phase, non_min_phase]
+protocols: [monitor_only, cbf_only, hybrid, defer_pi]
+attacks: [honest, overt, injection, covert, covert_aware]
+rtts_s: [0.0]
+runs_per_cell: 30

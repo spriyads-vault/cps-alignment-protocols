@@ -1,0 +1,8 @@
+# Experiment 3: delay sweep. The headline result is d*, per plant and protocol.
+# @remote: the CBF reasons from the state the supervisor saw. @edge: it re-checks live state.
+name: exp3_delay
+plants: [min_phase, non_min_phase]
+protocols: [hybrid@remote, hybrid@edge, cbf_only@remote, cbf_only@edge, defer_pi@remote, defer_pi@edge]
+attacks: [honest, overt, injection, covert_aware]
+rtts_s: [0.0, 2.0, 5.0, 8.0, 10.0, 12.0, 15.0, 20.0, 30.0, 45.0, 60.0, 90.0]
+runs_per_cell: 30

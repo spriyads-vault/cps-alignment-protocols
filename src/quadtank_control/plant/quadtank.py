@@ -24,6 +24,7 @@ derived from the voltages, so the model is at least self-consistent.]
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -100,6 +101,82 @@ def equilibrium_heights(p: QuadTankParams, v: tuple[float, float]) -> np.ndarray
     return (q / a) ** 2 / (2.0 * G)
 
 
+def derivatives(p: QuadTankParams, h: np.ndarray, v: np.ndarray) -> np.ndarray:
+    """dh/dt for heights h (cm) and pump voltages v (V)."""
+    return np.array(_deriv(p, tuple(float(x) for x in h), (float(v[0]), float(v[1]))))
+
+
+def _deriv(
+    p: QuadTankParams, h: tuple[float, ...], v: tuple[float, float]
+) -> tuple[float, float, float, float]:
+    """Scalar-float dynamics. Plain floats beat numpy on 4-element vectors by about 5x."""
+    A, a, k, g = p.A, p.a, p.k, p.gamma
+    s0 = math.sqrt(2.0 * G * max(h[0], 0.0))
+    s1 = math.sqrt(2.0 * G * max(h[1], 0.0))
+    s2 = math.sqrt(2.0 * G * max(h[2], 0.0))
+    s3 = math.sqrt(2.0 * G * max(h[3], 0.0))
+    return (
+        -a[0] / A[0] * s0 + a[2] / A[0] * s2 + g[0] * k[0] * v[0] / A[0],
+        -a[1] / A[1] * s1 + a[3] / A[1] * s3 + g[1] * k[1] * v[1] / A[1],
+        -a[2] / A[2] * s2 + (1.0 - g[1]) * k[1] * v[1] / A[2],
+        -a[3] / A[3] * s3 + (1.0 - g[0]) * k[0] * v[0] / A[3],
+    )
+
+
+def simulate_hold(
+    p: QuadTankParams,
+    h: np.ndarray,
+    v: np.ndarray,
+    dt: float,
+    substep: float = 0.1,
+) -> tuple[np.ndarray, bool, float]:
+    """Advance dt seconds with voltages held (zero-order hold), using RK4.
+
+    Voltages are saturated to [0, v_max]. Water above h_max spills and the height
+    stays at the rim. Returns (new heights, overflowed, spilled height in cm).
+    The guards call this too, so plant and predictor can never drift apart.
+    """
+    vs = (
+        min(max(float(v[0]), 0.0), p.v_max),
+        min(max(float(v[1]), 0.0), p.v_max),
+    )
+    n = max(1, int(round(dt / substep)))
+    step = dt / n
+    half = 0.5 * step
+    hh = tuple(float(x) for x in h)
+    overflow = False
+    spilled = 0.0
+    for _ in range(n):
+        k1 = _deriv(p, hh, vs)
+        k2 = _deriv(p, tuple(x + half * d for x, d in zip(hh, k1)), vs)
+        k3 = _deriv(p, tuple(x + half * d for x, d in zip(hh, k2)), vs)
+        k4 = _deriv(p, tuple(x + step * d for x, d in zip(hh, k3)), vs)
+        nxt = []
+        for i in range(4):
+            x = hh[i] + step / 6.0 * (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i])
+            x = max(x, 0.0)
+            if x > p.h_max:
+                overflow = True
+                spilled += x - p.h_max
+                x = p.h_max
+            nxt.append(x)
+        hh = tuple(nxt)
+    return np.array(hh), overflow, spilled
+
+
+def equilibrium_voltages(p: QuadTankParams, h_lower: tuple[float, float]) -> np.ndarray:
+    """Pump voltages that hold the lower tanks at h_lower in steady state.
+
+    Solves the 2x2 flow balance. Not clipped: a result outside [0, v_max] means
+    the reference is unreachable. Singular only when gamma1 + gamma2 == 1.
+    """
+    g1, g2 = p.gamma
+    k1, k2 = p.k
+    q = np.array(p.a[:2]) * np.sqrt(2.0 * G * np.asarray(h_lower, dtype=float))
+    m = np.array([[g1 * k1, (1.0 - g2) * k2], [(1.0 - g1) * k1, g2 * k2]])
+    return np.linalg.solve(m, q)
+
+
 class QuadTank:
     """Simulated plant. Time is simulated seconds, never wall-clock."""
 
@@ -114,43 +191,17 @@ class QuadTank:
         self.h = np.array(h_init if h_init is not None else params.h0, dtype=float)
         self.t = 0.0
 
-    def _deriv(self, h: np.ndarray, v: np.ndarray) -> np.ndarray:
-        p = self.p
-        A, a, k, g = p.A, p.a, p.k, p.gamma
-        s = np.sqrt(2.0 * G * np.maximum(h, 0.0))
-        return np.array(
-            [
-                -a[0] / A[0] * s[0] + a[2] / A[0] * s[2] + g[0] * k[0] * v[0] / A[0],
-                -a[1] / A[1] * s[1] + a[3] / A[1] * s[3] + g[1] * k[1] * v[1] / A[1],
-                -a[2] / A[2] * s[2] + (1.0 - g[1]) * k[1] * v[1] / A[2],
-                -a[3] / A[3] * s[3] + (1.0 - g[0]) * k[0] * v[0] / A[3],
-            ]
-        )
-
     def step(self, v: tuple[float, float], dt: float) -> StepInfo:
         """Advance dt seconds with pump voltages held constant (zero-order hold)."""
         v_sat = np.clip(np.asarray(v, dtype=float), 0.0, self.p.v_max)
-        n = max(1, int(round(dt / self.substep)))
-        h_step = dt / n
-        overflow = False
-        spilled = 0.0
-        h = self.h
-        for _ in range(n):
-            k1 = self._deriv(h, v_sat)
-            k2 = self._deriv(h + 0.5 * h_step * k1, v_sat)
-            k3 = self._deriv(h + 0.5 * h_step * k2, v_sat)
-            k4 = self._deriv(h + h_step * k3, v_sat)
-            h = h + h_step / 6.0 * (k1 + 2 * k2 + 2 * k3 + k4)
-            h = np.maximum(h, 0.0)
-            over = h > self.p.h_max
-            if over.any():
-                overflow = True
-                spilled += float(np.sum(h[over] - self.p.h_max))
-                h = np.minimum(h, self.p.h_max)  # water spills, height stays at the rim
-        self.h = h
+        self.h, overflow, spilled = simulate_hold(self.p, self.h, v_sat, dt, self.substep)
         self.t += dt
         return StepInfo(overflow, spilled, (float(v_sat[0]), float(v_sat[1])))
 
     def measure(self) -> tuple[float, float]:
-        """Sensors read the two lower tanks only."""
+        """The two lower tank heights, the controlled outputs."""
         return float(self.h[0]), float(self.h[1])
+
+    def state(self) -> tuple[float, float, float, float]:
+        """All four heights. Guards and supervisor are assumed to see these (A1)."""
+        return (float(self.h[0]), float(self.h[1]), float(self.h[2]), float(self.h[3]))

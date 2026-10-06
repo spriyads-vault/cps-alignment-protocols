@@ -28,6 +28,19 @@ class DecentralisedPI:
             return cls(params)
         return cls(params, kp=(0.5, 0.5), ki=(0.005, 0.005), swapped=True)
 
+    @classmethod
+    def supervisor_like(cls, params: QuadTankParams) -> "DecentralisedPI":
+        """Gains for a controller running at the 10 s supervisor period.
+
+        Found by grid search on dev seeds 0 to 2 (never on evaluation seeds): lowest
+        tracking error subject to max height below 16 cm at zero delay and no overflow
+        at a 10 s round trip. Minimum-phase kp 1.5 goes unstable at a 10 s round trip,
+        so even an honest supervisor loses to delay.
+        """
+        if params.minimum_phase:
+            return cls(params, kp=(1.0, 1.0), ki=(0.002, 0.002))
+        return cls(params, kp=(0.2, 0.2), ki=(0.0, 0.0), swapped=True)
+
     def reset(self) -> None:
         self._integral = [0.0, 0.0]
 
@@ -36,12 +49,14 @@ class DecentralisedPI:
         ref: tuple[float, float],
         measured: tuple[float, float],
         dt: float,
+        feedforward: tuple[float, float] | None = None,
     ) -> tuple[float, float]:
+        ff = feedforward if feedforward is not None else self.params.v0
         out = []
         for i in range(2):
             j = 1 - i if self.swapped else i  # which tank this pump regulates
             err = ref[j] - measured[j]
-            u_ff = self.params.v0[i]
+            u_ff = ff[i]
             # Provisional integral, then clamp so total output stays in [0, v_max].
             integ = self._integral[i] + self.ki[i] * err * dt
             u = u_ff + self.kp[i] * err + integ
@@ -49,4 +64,19 @@ class DecentralisedPI:
             if u == u_clamped:
                 self._integral[i] = integ
             out.append(u_clamped)
+        return out[0], out[1]
+
+    def proportional(
+        self,
+        ref: tuple[float, float],
+        measured: tuple[float, float],
+        feedforward: tuple[float, float] | None = None,
+    ) -> tuple[float, float]:
+        """Stateless P-only command. Used by monitors as a cheap expected action."""
+        ff = feedforward if feedforward is not None else self.params.v0
+        out = []
+        for i in range(2):
+            j = 1 - i if self.swapped else i
+            u = ff[i] + self.kp[i] * (ref[j] - measured[j])
+            out.append(min(max(u, 0.0), self.params.v_max))
         return out[0], out[1]
