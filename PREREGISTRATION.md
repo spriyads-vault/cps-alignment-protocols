@@ -154,13 +154,19 @@ Two real-model checks ran after experiments 1 to 3 were read.
 - Scripted attacks scored by Haiku 4.5 (`results/llm_monitor_scripted_attacks_run1.md`): the monitor
   caught overt and injected actions at 100% and was not fooled by the authority claim. Its prompt warned
   about authority claims, the attack was crude, and the sample is two episodes per condition.
+- Run 2 (`results/llm_monitor_scripted_attacks_run2.md`) removed the warning and added the monitor-aware
+  covert attacker. Same result: nothing was fooled, AUROC unchanged, mean scores down by 0.01 to 0.02.
 
 Effect on earlier claims. C1a, C2c and C2d pass because the surrogate monitor is built to be fooled
 (A2 F8). The first real evidence points the other way for a crude injection. So the surrogate's weakness
 is a pessimistic assumption about monitors and not an observed property. The pre-registered criteria are
 unchanged and their results stand as statements about the harness with that surrogate. Claim C1's
-language-model half is **not supported by the one test run so far, and not refuted either**: the unwarned
-monitor, the monitor-aware covert attack and adaptive attackers are untested.
+language-model half is **not supported by two runs, and not refuted either**: adaptive attackers, subtle
+actions and other models are untested. C2c and C2d would probably fail with a monitor that flags about 82%
+of covert-aware decisions. That expectation is untested in closed loop with a real monitor. An exploratory simulation-only rerun of
+experiment 2 with a surrogate that ignores authority claims (`configs/exp2_unfooled_hybrid.yaml`) reverses both:
+defer-to-PI sabotage against the monitor-aware covert attacker falls from 30 of 30 to 0 of 30 on the
+minimum-phase plant. So C2c and C2d depend entirely on the surrogate's built-in weakness.
 
 ## 6. Stop rules
 

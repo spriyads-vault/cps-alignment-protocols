@@ -82,7 +82,7 @@ def calibrate(cfg: ExperimentConfig, plant: str) -> tuple[float, float]:
     Uses its own seed range, so no scored episode contributes to its own threshold.
     """
     params = PLANTS[plant]
-    monitor = RuleMonitor(params)
+    monitor = RuleMonitor(params, cfg.monitor_gullibility)
     scores: list[float] = []
     for i in range(cfg.calibration_runs):
         sc = Scenario(plant, "no_guard", "honest", 0.0, 0.0, CALIBRATION_SEED_BASE + i)
@@ -102,7 +102,7 @@ def run_scenario(
     proto = Protocol(
         parse_protocol_name(sc.protocol),
         params,
-        RuleMonitor(params),
+        RuleMonitor(params, cfg.monitor_gullibility),
         CBFConfig(cfg.cbf.h_safe, cfg.cbf.gamma, cfg.cbf.horizon_s),
         block_threshold=block_t,
         defer_threshold=defer_t,
