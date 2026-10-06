@@ -63,8 +63,8 @@ planned ablation, not done.
 ## 5. Predictions
 
 Source: a 6-seed dev pilot (seeds 0 to 5) on 5 protocols and 7 delays. Not derived from
-theory. A theory-based prediction from the delay margin of the filtered loop is still
-[NEED: compute]. It will be added as an amendment, dated, if done before experiment 3.
+theory. A theory-based prediction for the honest loop is in amendment A1. None exists for the
+remote-CBF threshold.
 
 - P1. C1 holds on both plants at zero delay.
 - P2. C2 holds on both plants at zero delay.
@@ -76,6 +76,29 @@ theory. A theory-based prediction from the delay margin of the filtered loop is 
   reported next to every attack threshold.
 
 Experiment 3 is read as: if P3 or P4 fail, the headline changes and that is reported.
+
+### Amendment A1 (2026-10-06): theory-based prediction for P5
+
+Written while experiment 3 was still running. None of its output had been read. The run
+started before this amendment, so the claim "the prediction came first" rests on my not having
+looked, which a timestamp can show only in part. Experiments 1 and 2 were already read.
+
+Method: `scripts/delay_margin.py` linearises the plant at its operating point, discretises it
+at the 2 s plant step, closes the loop with the honest PI supervisor sampled every 10 s with its
+command held and delayed by the round trip, and finds the smallest round-trip delay at which the
+one-period map has spectral radius 1 or more.
+
+- P5a. Minimum-phase honest loop goes unstable from a round trip of about 15.1 s (spectral
+  radius 0.986 at zero delay).
+- P5b. Non-minimum-phase honest loop stays stable out to 120 s (0.897 at zero delay).
+- Check against the nonlinear simulator, noise-free honest runs, no guard: stable at 14 s,
+  oscillating and overflowing at 16 s. Agrees with P5a.
+
+Scope: this predicts when the supervisor's own loop fails. It does not predict the remote-CBF
+overflow threshold (P3), which is nonlinear and still rests on the dev pilot. Consequence for
+reading experiment 3: in the minimum-phase plant, overflow in any no-edge-filter protocol at or
+beyond about 15 s is expected from the honest supervisor alone and is not evidence about the
+adversary.
 
 ## 6. Stop rules
 
