@@ -44,9 +44,9 @@ def test_calibrate_handles_ties_at_zero():
 
 
 def test_calibrate_rejects_bad_input():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="at least one"):
         calibrate_threshold([], 0.01)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="fpr"):
         calibrate_threshold([0.1], 1.0)
 
 

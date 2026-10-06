@@ -29,7 +29,7 @@ def test_same_seed_same_sequence():
 
 
 def test_rejects_bad_config():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="non-negative"):
         LinkConfig(delay_s=-1.0)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="loss_prob"):
         LinkConfig(loss_prob=1.5)

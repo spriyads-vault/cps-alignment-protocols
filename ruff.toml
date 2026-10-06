@@ -1,0 +1,14 @@
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "C4", "PT"]
+ignore = [
+    "E501",    # the formatter owns line length
+    "RUF012",  # mutable class attributes: not used in a way that bites here
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["B011", "PT018"]  # conjunctive asserts read fine in tests
+"scripts/*" = ["E402"]

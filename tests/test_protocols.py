@@ -15,16 +15,16 @@ def _obs():
 def test_parse_names():
     assert parse_protocol_name("hybrid").cbf_location == "edge"
     assert parse_protocol_name("hybrid@remote").cbf_location == "remote"
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unknown protocol"):
         parse_protocol_name("nope")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="no CBF"):
         parse_protocol_name("monitor_only@edge")  # no CBF to place
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unknown CBF location"):
         parse_protocol_name("hybrid@somewhere")
 
 
 def test_monitor_protocol_requires_monitor():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="needs a monitor"):
         Protocol(PRESETS["hybrid"], P, monitor=None)
 
 

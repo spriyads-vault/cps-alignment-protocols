@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from quadtank_control.plant import (
     MIN_PHASE,
@@ -83,9 +84,7 @@ def test_water_mass_balance(p):
     inflow = (p.k[0] * v[0] + p.k[1] * v[1]) * dt * n
     outflow = 0.0
     for _ in range(n):
-        outflow += sum(
-            p.a[i] * np.sqrt(2 * G * plant.h[i]) * dt for i in (0, 1)
-        )
+        outflow += sum(p.a[i] * np.sqrt(2 * G * plant.h[i]) * dt for i in (0, 1))
         plant.step(v, dt)
     stored = float(np.dot(p.A, plant.h - h_start))
     assert stored == pytest.approx(inflow - outflow, rel=0.05, abs=2.0)

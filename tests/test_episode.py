@@ -4,7 +4,7 @@ from quadtank_control.episode import EpisodeConfig, run_episode
 from quadtank_control.monitors import RuleMonitor
 from quadtank_control.network import LinkConfig
 from quadtank_control.plant import MIN_PHASE
-from quadtank_control.protocols import PRESETS, Protocol, parse_protocol_name
+from quadtank_control.protocols import Protocol, parse_protocol_name
 from quadtank_control.supervisors import AttackSupervisor, HonestSupervisor
 
 P = MIN_PHASE
@@ -38,7 +38,11 @@ def test_trusted_pi_ignores_the_network():
 
 def test_command_delay_is_reported():
     cfg = EpisodeConfig(
-        params=P, uplink=LinkConfig(2.0), downlink=LinkConfig(3.0), supervisor_latency_s=1.0, monitor_latency_s=0.5
+        params=P,
+        uplink=LinkConfig(2.0),
+        downlink=LinkConfig(3.0),
+        supervisor_latency_s=1.0,
+        monitor_latency_s=0.5,
     )
     r = _run("hybrid", HonestSupervisor(P), cfg, block_threshold=0.5)
     assert r.command_delay_s == pytest.approx(6.5)

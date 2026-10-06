@@ -24,7 +24,7 @@ def test_cuts_an_unsafe_command():
 
 @pytest.mark.parametrize("p", PLANTS)
 @pytest.mark.parametrize(
-    "h,v_des",
+    ("h", "v_des"),
     [
         ((15.0, 14.0, 4.0, 3.0), (10.0, 10.0)),
         ((16.5, 12.0, 5.0, 2.0), (9.0, 3.0)),
@@ -70,7 +70,7 @@ def test_forward_invariance_under_adversarial_commands(p, seed):
 
 
 def test_config_validation():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gamma"):
         CBFConfig(gamma=0.0)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="horizon"):
         CBFConfig(horizon=0.0)

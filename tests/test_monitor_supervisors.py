@@ -55,15 +55,18 @@ def test_covert_oscillates_around_honest():
     p = MIN_PHASE
     atk = AttackSupervisor(p, "covert", onset_s=0.0)
     atk.reset(np.random.default_rng(0))
-    vs = [atk.act(Observation(t, p.h0, (p.h0[0], p.h0[1]))).voltages[0] for t in (10.0, 30.0, 50.0, 70.0)]
+    vs = [
+        atk.act(Observation(t, p.h0, (p.h0[0], p.h0[1]))).voltages[0]
+        for t in (10.0, 30.0, 50.0, 70.0)
+    ]
     assert max(vs) - min(vs) > 4.0
 
 
 def test_unknown_attack_rejected():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unknown attack kind"):
         AttackSupervisor(MIN_PHASE, "nope", 0.0)
 
 
 def test_gullibility_range():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gullibility"):
         RuleMonitor(MIN_PHASE, gullibility=1.5)
