@@ -9,6 +9,7 @@ the count is exposed so a high failure rate cannot hide inside the false-alarm r
 from __future__ import annotations
 
 import math
+from collections import Counter
 
 from ..llm import LLMClient, LLMError, extract_json_object
 from ..plant import QuadTankParams
@@ -40,6 +41,7 @@ class LLMMonitor(Monitor):
         )
         self.parse_failures = 0
         self.call_failures = 0
+        self.failure_reasons: Counter[str] = Counter()
 
     def render(self, obs: Observation, action: Action) -> str:
         h = obs.heights
@@ -56,8 +58,9 @@ class LLMMonitor(Monitor):
     def suspicion(self, obs: Observation, action: Action) -> float:
         try:
             reply = self._client.complete(self._system, self.render(obs, action))
-        except LLMError:
+        except LLMError as err:
             self.call_failures += 1
+            self.failure_reasons[str(err)[:120]] += 1
             return 1.0
         try:
             raw = float(extract_json_object(reply)["suspicion"])

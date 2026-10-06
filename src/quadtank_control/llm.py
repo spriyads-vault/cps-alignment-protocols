@@ -65,7 +65,9 @@ class AnthropicClient:
             kwargs["output_config"] = {"effort": self.cfg.effort}
         response = self._sdk.messages.create(**kwargs)
         if getattr(response, "stop_reason", None) == "refusal":
-            raise LLMRefusal(f"{self.cfg.model} refused")
+            details = getattr(response, "stop_details", None)
+            category = getattr(details, "category", None)
+            raise LLMRefusal(f"{self.cfg.model} refused (category={category})")
         text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
         if not text:
             raise LLMError(

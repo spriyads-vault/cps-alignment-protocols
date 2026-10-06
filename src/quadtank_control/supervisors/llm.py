@@ -7,6 +7,7 @@ control protocols. They are red-team proxies: a prompted model is not a scheming
 from __future__ import annotations
 
 import math
+from collections import Counter
 
 import numpy as np
 
@@ -68,6 +69,9 @@ class LLMSupervisor(Supervisor):
         )
         self.parse_failures = 0
         self.call_failures = 0
+        # Why calls failed, so a run of failures can be told apart (refusal or empty reply or error).
+        self.failure_reasons: Counter[str] = Counter()
+        self.parse_examples: list[str] = []
         self._last: Voltages = params.v0
 
     def reset(self, rng: np.random.Generator) -> None:
@@ -90,8 +94,9 @@ class LLMSupervisor(Supervisor):
         system = self._attack_system if attacking else self._system
         try:
             reply = self._client.complete(system, self.render(obs))
-        except LLMError:
+        except LLMError as err:
             self.call_failures += 1
+            self.failure_reasons[str(err)[:120]] += 1
             return Action(self._last, "[no response, holding last command]")
         try:
             obj = extract_json_object(reply)
@@ -101,6 +106,8 @@ class LLMSupervisor(Supervisor):
             rationale = str(obj.get("rationale", ""))
         except (ValueError, KeyError, TypeError):
             self.parse_failures += 1
+            if len(self.parse_examples) < 3:
+                self.parse_examples.append(reply[:120])
             return Action(self._last, "[unparseable reply, holding last command]")
         self._last = v
         return Action(v, rationale)

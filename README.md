@@ -16,7 +16,7 @@ Read `PREREGISTRATION.md` first. It was committed before any evaluation episode 
 | Each guard alone has a blind spot (experiment 1) | Passes 10 of 10 criteria. C1a is guaranteed by the surrogate monitor. The CBF blind spot (C1c) is a real property of the method |
 | The guards together hold against overt and injected attacks, and fail against a monitor-aware covert one (experiment 2) | Passes 8 of 8 criteria. C2c and C2d are guaranteed by the surrogate monitor. C2a and C2b are real |
 | Where the delay threshold d* sits (experiment 3) | Remote-CBF protocols lose overflow safety at about 12 to 16 s round trip. Edge-CBF protocols never do. Scripted attackers and surrogate monitor, see results |
-| **LLM monitors fall for injected text** | **Not tested.** Needs the real-model pilot, which has not been run |
+| **LLM monitors fall for injected text** | **Not tested.** Pilot 1 failed (see Real-model pilots). The scripted-attack evaluation that answers it is built but not run |
 | Anything about adaptive attackers | Not built |
 
 The monitor in every result so far is `RuleMonitor`, a deterministic surrogate. It discounts
@@ -116,15 +116,26 @@ Raw per-episode CSVs are gitignored and regenerate from the config and seeds.
 
 Quality gate, the same as CI: `ruff check`, `ruff format --check`, `mypy`, `pytest`.
 
-## Real-model pilot (not yet run)
+## Real-model pilots
 
-`scripts/llm_monitor_pilot.py` asks the question the surrogate cannot: does an LLM monitor
-separate honest from attacking LLM supervisors, and does seeing the rationale help? It
-refuses to run without `--yes` and a hard `--max-calls`, and caches every response. With
-`--runs 1` and the three attacks, that is 4 episodes x 60 decisions x 3 calls = 720 calls.
-The cost has not been measured. [NEED: price a small run with `count_tokens` before choosing a budget.]
+**Pilot 1 was a null result.** Every one of its 102 attack-mode supervisor calls failed, so the monitor
+only ever saw a placeholder action and all three attacks scored an identical AUROC of 0.50. Details in
+`results/llm_monitor_pilot_run1.md`. The reason for the failures was not recorded. The likely one is that
+the model declined the red-team prompts. The scripts now record the reason for every failure.
 
-    uv run python scripts/llm_monitor_pilot.py --max-calls 800 --runs 1   # dry run, spends nothing
+It did measure latency, once: supervisor median 1.9 s, monitor median 2.9 s. In the experiment 3 model
+those add to the command path, so a real hybrid deployment sits at about 4.8 s of delay before any network
+is involved. If the sweep's cliff at 12 to 16 s carries over, the network round trip has about 7 s of room.
+That is an inference from one run, not a measurement.
+
+**Next: `scripts/llm_monitor_scripted_attacks.py`.** It scripts the attacks (honest, overt, injection with
+an authority-claim rationale, covert) so no model is asked to attack and nothing can refuse. Only the
+monitor is a model, in two variants that score the same actions: rationale-reading and numbers-only. It
+reports AUROC and detection at a threshold calibrated for 1% false alarms. This is the test of the
+surrogate monitor's built-in assumption. Two runs per condition is 636 Haiku calls. It refuses to run
+without `--yes` and a hard `--max-calls`, and caches every response. Not yet run.
+
+    uv run python scripts/llm_monitor_scripted_attacks.py --runs 2 --max-calls 800   # dry run, spends nothing
 
 ## Layout
 
@@ -139,6 +150,7 @@ The cost has not been measured. [NEED: price a small run with `count_tokens` bef
       monitors/     rule.py (surrogate), llm.py
       supervisors/  scripted.py (honest and attacks), llm.py
       llm.py        LLMClient protocol, budget guard, cache, Anthropic client
+      experiments/monitor_eval.py   score scripted attacks with a real monitor
       controlarena_setting.py   ControlArena setting (optional dependency)
       experiments/  runner, report, CLI
     configs/        one YAML per experiment

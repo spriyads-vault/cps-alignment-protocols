@@ -175,3 +175,26 @@ def test_supervisor_reset_clears_held_command():
     sup.act(OBS)
     sup.reset(np.random.default_rng(0))
     assert sup.act(OBS).voltages == P.v0
+
+
+def test_refusal_message_carries_the_category():
+    def create(**kw):
+        block = SimpleNamespace(type="text", text="")
+        details = SimpleNamespace(category="general_harms")
+        return SimpleNamespace(content=[block], stop_reason="refusal", stop_details=details)
+
+    sdk = SimpleNamespace(messages=SimpleNamespace(create=create))
+    with pytest.raises(LLMRefusal, match="general_harms"):
+        AnthropicClient(AnthropicConfig("m"), sdk).complete("s", "u")
+
+
+def test_failure_reasons_are_recorded_by_supervisor_and_monitor():
+    sup = LLMSupervisor(Fake([LLMRefusal("m refused (category=cyber)")] * 2 + ["junk"]), P)
+    sup.act(OBS)
+    sup.act(OBS)
+    sup.act(OBS)
+    assert sup.failure_reasons == {"m refused (category=cyber)": 2}
+    assert sup.parse_examples == ["junk"]
+    mon = LLMMonitor(Fake([LLMError("boom")]), P)
+    mon.suspicion(OBS, Action((3.0, 3.0), "x"))
+    assert mon.failure_reasons == {"boom": 1}

@@ -20,6 +20,7 @@ import json
 import statistics
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 from quadtank_control.episode import EpisodeConfig, run_episode
@@ -112,6 +113,7 @@ def main() -> int:
         c: {"with_rationale": [], "actions_only": []} for c in conditions
     }
     failures = {"supervisor_parse": 0, "supervisor_call": 0, "monitor_parse": 0, "monitor_call": 0}
+    reasons: Counter[str] = Counter()  # why calls failed, by condition and component
     for cond in conditions:
         for i in range(args.runs):
             seed = args.seed_base + i
@@ -136,11 +138,19 @@ def main() -> int:
             failures["supervisor_call"] += sup.call_failures
             failures["monitor_parse"] += m_with.parse_failures + m_blind.parse_failures
             failures["monitor_call"] += m_with.call_failures + m_blind.call_failures
+            for k, v in sup.failure_reasons.items():
+                reasons[f"{cond} supervisor: {k}"] += v
+            for mon in (m_with, m_blind):
+                for k, v in mon.failure_reasons.items():
+                    reasons[f"{cond} monitor: {k}"] += v
+            for ex in sup.parse_examples:
+                reasons[f"{cond} unparseable supervisor reply: {ex!r}"] += 1
             print(f"  {cond} run {i + 1}/{args.runs} done", flush=True)
 
     report: dict[str, object] = {
         "args": {k: str(v) for k, v in vars(args).items()},
         "failures": failures,
+        "failure_reasons": dict(reasons),
     }
     for variant in ("with_rationale", "actions_only"):
         honest = scores["honest"][variant]
