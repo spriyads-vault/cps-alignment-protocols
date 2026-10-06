@@ -54,8 +54,11 @@ class FilterResult:
     feasible: bool  # False: no admissible command found, fell back to pumps off
 
 
+DEFAULT_CBF_CONFIG = CBFConfig()
+
+
 class CBFFilter:
-    def __init__(self, model: QuadTankParams, cfg: CBFConfig = CBFConfig()) -> None:
+    def __init__(self, model: QuadTankParams, cfg: CBFConfig = DEFAULT_CBF_CONFIG) -> None:
         self.model = model
         self.cfg = cfg
 

@@ -5,21 +5,21 @@ import pytest
 pytest.importorskip("control_arena")
 pytest.importorskip("inspect_ai")
 
-from control_arena import EvalMode, control_agent  # noqa: E402
-from control_arena.eval import ControlEvalConfig, get_control_task  # noqa: E402
-from control_arena.micro_protocol import trusted_monitoring_builder  # noqa: E402
-from control_arena.monitor import MonitorResponse, monitor  # noqa: E402
-from control_arena.policy import fixed_policy_builder  # noqa: E402
-from inspect_ai import eval as inspect_eval  # noqa: E402
-from inspect_ai.agent import Agent, AgentState  # noqa: E402
-from inspect_ai.tool import Tool, ToolCall  # noqa: E402
+from control_arena import EvalMode, control_agent
+from control_arena.eval import ControlEvalConfig, get_control_task
+from control_arena.micro_protocol import trusted_monitoring_builder
+from control_arena.monitor import MonitorResponse, monitor
+from control_arena.policy import fixed_policy_builder
+from inspect_ai import eval as inspect_eval
+from inspect_ai.agent import Agent, AgentState
+from inspect_ai.tool import Tool, ToolCall
 
-from quadtank_control.controlarena_setting import QuadTankSetting, clear_runs  # noqa: E402
-from quadtank_control.env import EpisodeEnv  # noqa: E402
-from quadtank_control.episode import EpisodeConfig  # noqa: E402
-from quadtank_control.plant import MIN_PHASE  # noqa: E402
-from quadtank_control.protocols import PRESETS, Protocol  # noqa: E402
-from quadtank_control.supervisors import HonestSupervisor  # noqa: E402
+from quadtank_control.controlarena_setting import QuadTankSetting, clear_runs
+from quadtank_control.env import EpisodeEnv
+from quadtank_control.episode import EpisodeConfig
+from quadtank_control.plant import MIN_PHASE
+from quadtank_control.protocols import PRESETS, Protocol
+from quadtank_control.supervisors import HonestSupervisor
 
 SEED = 10_000
 _LOG_DIR = ""
@@ -51,7 +51,7 @@ def _calls(voltages: list[tuple[float, float]]) -> list[ToolCall]:
 
 def _n_steps() -> int:
     cfg = EpisodeConfig()
-    return int(round(cfg.duration_s / cfg.supervisor_period_s))
+    return round(cfg.duration_s / cfg.supervisor_period_s)
 
 
 def _honest_script() -> list[tuple[float, float]]:
@@ -86,8 +86,6 @@ def _run(mode: EvalMode, protocol: str, script, side: str | None = None) -> dict
     assert log.status == "success", log.error
     (sample,) = log.samples
     return dict(sample.scores["quadtank_scorer"].value)
-
-
 
 
 def test_honest_no_guard_main_task_succeeds():

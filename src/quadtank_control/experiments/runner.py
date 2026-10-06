@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 
 from ..config import ExperimentConfig
-from ..episode import EpisodeConfig, EpisodeResult, run_episode
+from ..episode import EpisodeConfig, run_episode
 from ..metrics import (
     SabotageSpec,
     calibrate_threshold,
@@ -109,9 +109,7 @@ def run_scenario(
         remote_hold_s=cfg.supervisor_period_s,
     )
     res = run_episode(ecfg, make_supervisor(sc.plant, sc.attack, onset), proto, onset)
-    base = run_episode(
-        ecfg, HonestSupervisor(params), Protocol(PRESETS["pi_only"], params), onset
-    )
+    base = run_episode(ecfg, HonestSupervisor(params), Protocol(PRESETS["pi_only"], params), onset)
     window = cfg.duration_s - onset
     spec = SabotageSpec(cfg.sabotage.min_extra_mean_error_cm, cfg.sabotage.min_energy_ratio)
     sabotage = is_sabotaged(res, base, window, spec)
@@ -126,7 +124,9 @@ def run_scenario(
     return row
 
 
-def _worker(args: tuple[ExperimentConfig, dict[str, tuple[float, float]], Scenario]) -> dict[str, Any]:
+def _worker(
+    args: tuple[ExperimentConfig, dict[str, tuple[float, float]], Scenario],
+) -> dict[str, Any]:
     return run_scenario(*args)
 
 
@@ -149,7 +149,7 @@ def build_scenarios(cfg: ExperimentConfig) -> list[Scenario]:
 
 def run_experiment(cfg: ExperimentConfig, out_dir: Path) -> list[dict[str, Any]]:
     out_dir.mkdir(parents=True, exist_ok=True)
-    thresholds = {p: calibrate(cfg, p) for p in cfg.plants}
+    thresholds: dict[str, tuple[float, float]] = {p: calibrate(cfg, p) for p in cfg.plants}
     scenarios = build_scenarios(cfg)
     workers = cfg.workers or max(1, (os.cpu_count() or 1))
     jobs = [(cfg, thresholds, sc) for sc in scenarios]
@@ -224,23 +224,34 @@ def summarise(
     }
 
 
-def delay_thresholds(cfg: ExperimentConfig, groups: dict[Cell, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+def delay_thresholds(
+    cfg: ExperimentConfig, groups: dict[Cell, list[dict[str, Any]]]
+) -> list[dict[str, Any]]:
     """d* per (plant, protocol, attack) for each harm type. The PI baseline harm rate is 0."""
     out = []
-    keys = sorted({(p, pr, a, l) for (p, pr, a, _r, l) in groups})
+    keys = sorted({(p, pr, a, lo) for (p, pr, a, _r, lo) in groups})
     for plant, proto, attack, loss in keys:
-        rtts = sorted({r for (p, pr, a, r, l) in groups if (p, pr, a, l) == (plant, proto, attack, loss)})
+        rtts = sorted(
+            {r for (p, pr, a, r, lo) in groups if (p, pr, a, lo) == (plant, proto, attack, loss)}
+        )
         if len(rtts) < 3:
             continue
         for key in ("overflow", "soft_violation", "harm"):
-            ks = [sum(bool(r[key]) for r in groups[(plant, proto, attack, rtt, loss)]) for rtt in rtts]
+            ks = [
+                sum(bool(r[key]) for r in groups[(plant, proto, attack, rtt, loss)]) for rtt in rtts
+            ]
             ns = [len(groups[(plant, proto, attack, rtt, loss)]) for rtt in rtts]
             t = delay_threshold(rtts, ks, ns, 0.0, cfg.threshold_margin)
             out.append(
                 {
-                    "plant": plant, "protocol": proto, "attack": attack, "loss_prob": loss,
-                    "harm_type": key, "d_star_first_harm": t.first_harm,
-                    "d_star_point": t.point, "d_star_confirmed": t.confirmed,
+                    "plant": plant,
+                    "protocol": proto,
+                    "attack": attack,
+                    "loss_prob": loss,
+                    "harm_type": key,
+                    "d_star_first_harm": t.first_harm,
+                    "d_star_point": t.point,
+                    "d_star_confirmed": t.confirmed,
                 }
             )
     return out

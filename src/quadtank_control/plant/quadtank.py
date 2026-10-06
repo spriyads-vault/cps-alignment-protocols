@@ -45,7 +45,8 @@ class QuadTankParams:
     @property
     def h0(self) -> tuple[float, float, float, float]:
         """Operating point: the exact equilibrium for v0 under these parameters."""
-        return tuple(float(x) for x in equilibrium_heights(self, self.v0))
+        h = equilibrium_heights(self, self.v0)
+        return (float(h[0]), float(h[1]), float(h[2]), float(h[3]))
 
     @property
     def minimum_phase(self) -> bool:
@@ -54,8 +55,7 @@ class QuadTankParams:
     def time_constants(self) -> tuple[float, float, float, float]:
         """T_i = A_i / a_i * sqrt(2 h_i / g) at the operating point."""
         return tuple(
-            A / a * np.sqrt(2.0 * h / G)
-            for A, a, h in zip(self.A, self.a, self.h0)
+            A / a * np.sqrt(2.0 * h / G) for A, a, h in zip(self.A, self.a, self.h0, strict=True)
         )
 
 
@@ -98,7 +98,7 @@ def equilibrium_heights(p: QuadTankParams, v: tuple[float, float]) -> np.ndarray
     q = np.array([q1, q2, q3, q4])
     a = np.array(p.a)
     # outflow = a * sqrt(2 g h) = q  ->  h = (q / a)^2 / (2 g)
-    return (q / a) ** 2 / (2.0 * G)
+    return np.asarray((q / a) ** 2 / (2.0 * G), dtype=float)
 
 
 def derivatives(p: QuadTankParams, h: np.ndarray, v: np.ndarray) -> np.ndarray:
@@ -140,7 +140,7 @@ def simulate_hold(
         min(max(float(v[0]), 0.0), p.v_max),
         min(max(float(v[1]), 0.0), p.v_max),
     )
-    n = max(1, int(round(dt / substep)))
+    n = max(1, round(dt / substep))
     step = dt / n
     half = 0.5 * step
     hh = tuple(float(x) for x in h)
@@ -148,9 +148,9 @@ def simulate_hold(
     spilled = 0.0
     for _ in range(n):
         k1 = _deriv(p, hh, vs)
-        k2 = _deriv(p, tuple(x + half * d for x, d in zip(hh, k1)), vs)
-        k3 = _deriv(p, tuple(x + half * d for x, d in zip(hh, k2)), vs)
-        k4 = _deriv(p, tuple(x + step * d for x, d in zip(hh, k3)), vs)
+        k2 = _deriv(p, tuple(x + half * d for x, d in zip(hh, k1, strict=True)), vs)
+        k3 = _deriv(p, tuple(x + half * d for x, d in zip(hh, k2, strict=True)), vs)
+        k4 = _deriv(p, tuple(x + step * d for x, d in zip(hh, k3, strict=True)), vs)
         nxt = []
         for i in range(4):
             x = hh[i] + step / 6.0 * (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i])
@@ -174,7 +174,7 @@ def equilibrium_voltages(p: QuadTankParams, h_lower: tuple[float, float]) -> np.
     k1, k2 = p.k
     q = np.array(p.a[:2]) * np.sqrt(2.0 * G * np.asarray(h_lower, dtype=float))
     m = np.array([[g1 * k1, (1.0 - g2) * k2], [(1.0 - g1) * k1, g2 * k2]])
-    return np.linalg.solve(m, q)
+    return np.asarray(np.linalg.solve(m, q), dtype=float)
 
 
 class QuadTank:

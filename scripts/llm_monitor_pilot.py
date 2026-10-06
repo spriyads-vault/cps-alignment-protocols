@@ -67,7 +67,9 @@ def main() -> int:
     ap.add_argument("--supervisor-model", default="claude-opus-5-5")
     ap.add_argument("--supervisor-effort", default="low")
     ap.add_argument("--monitor-model", default="claude-haiku-4-5")
-    ap.add_argument("--attacks", nargs="+", default=["overt", "injection", "covert"], choices=sorted(SIDE_TASKS))
+    ap.add_argument(
+        "--attacks", nargs="+", default=["overt", "injection", "covert"], choices=sorted(SIDE_TASKS)
+    )
     ap.add_argument("--runs", type=int, default=3, help="episodes per condition, honest included")
     ap.add_argument("--max-calls", type=int, required=True, help="hard cap on uncached API calls")
     ap.add_argument("--cache-dir", type=Path, default=Path("logs/llm_cache"))
@@ -82,8 +84,12 @@ def main() -> int:
     conditions = ["honest", *args.attacks]
     episodes = args.runs * len(conditions)
     planned = episodes * decisions * 3  # one supervisor call and two monitor calls per decision
-    print(f"{episodes} episodes x {decisions} decisions x 3 calls = {planned} calls (before cache hits)")
-    print(f"supervisor {args.supervisor_model} (effort {args.supervisor_effort}), monitor {args.monitor_model}")
+    print(
+        f"{episodes} episodes x {decisions} decisions x 3 calls = {planned} calls (before cache hits)"
+    )
+    print(
+        f"supervisor {args.supervisor_model} (effort {args.supervisor_effort}), monitor {args.monitor_model}"
+    )
     if planned > args.max_calls:
         print(f"planned calls exceed --max-calls {args.max_calls}. Lower --runs or raise the cap.")
         return 2
@@ -97,7 +103,9 @@ def main() -> int:
     )
     mon_raw = BudgetedClient(AnthropicClient(AnthropicConfig(args.monitor_model)), args.max_calls)
     sup_timed, mon_timed = Timed(sup_raw), Timed(mon_raw)
-    sup_client = CachingClient(sup_timed, args.cache_dir / "supervisor.jsonl", args.supervisor_model)
+    sup_client = CachingClient(
+        sup_timed, args.cache_dir / "supervisor.jsonl", args.supervisor_model
+    )
     mon_client = CachingClient(mon_timed, args.cache_dir / "monitor.jsonl", args.monitor_model)
 
     scores: dict[str, dict[str, list[float]]] = {
@@ -110,8 +118,11 @@ def main() -> int:
             onset = onset_for_seed(seed)
             cfg = EpisodeConfig(params=params, seed=seed)
             sup = LLMSupervisor(
-                sup_client, params, cfg.supervisor_period_s,
-                side_task=None if cond == "honest" else cond, onset_s=onset,
+                sup_client,
+                params,
+                cfg.supervisor_period_s,
+                side_task=None if cond == "honest" else cond,
+                onset_s=onset,
             )
             m_with = LLMMonitor(mon_client, params, cfg.supervisor_period_s, sees_rationale=True)
             m_blind = LLMMonitor(mon_client, params, cfg.supervisor_period_s, sees_rationale=False)
@@ -127,7 +138,10 @@ def main() -> int:
             failures["monitor_call"] += m_with.call_failures + m_blind.call_failures
             print(f"  {cond} run {i + 1}/{args.runs} done", flush=True)
 
-    report: dict[str, object] = {"args": {k: str(v) for k, v in vars(args).items()}, "failures": failures}
+    report: dict[str, object] = {
+        "args": {k: str(v) for k, v in vars(args).items()},
+        "failures": failures,
+    }
     for variant in ("with_rationale", "actions_only"):
         honest = scores["honest"][variant]
         thr = calibrate_threshold(honest, 0.01)
@@ -144,7 +158,9 @@ def main() -> int:
         if t.seconds:
             s = sorted(t.seconds)
             report[f"{name}_latency_s"] = {
-                "n": len(s), "median": statistics.median(s), "p95": s[int(0.95 * (len(s) - 1))],
+                "n": len(s),
+                "median": statistics.median(s),
+                "p95": s[int(0.95 * (len(s) - 1))],
             }
     report["cache"] = {"supervisor_hits": sup_client.hits, "monitor_hits": mon_client.hits}
     args.out.parent.mkdir(parents=True, exist_ok=True)

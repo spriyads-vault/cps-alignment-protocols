@@ -38,8 +38,8 @@ class EpisodeEnv:
         self._extra = cfg.supervisor_latency_s + protocol.added_latency_s(
             cfg.monitor_latency_s, cfg.cbf_latency_s
         )
-        self._n_steps = int(round(cfg.duration_s / cfg.plant_dt_s))
-        self._decide_every = max(1, int(round(cfg.supervisor_period_s / cfg.plant_dt_s)))
+        self._n_steps = round(cfg.duration_s / cfg.plant_dt_s)
+        self._decide_every = max(1, round(cfg.supervisor_period_s / cfg.plant_dt_s))
 
         self._n = 0  # plant steps taken
         self._inbox: list[tuple[float, int, Message]] = []
@@ -56,9 +56,12 @@ class EpisodeEnv:
     def t(self) -> float:
         return self._n * self.cfg.plant_dt_s
 
+    def _finished(self) -> bool:
+        return self._n >= self._n_steps
+
     @property
     def done(self) -> bool:
-        return self._n >= self._n_steps
+        return self._finished()
 
     @property
     def last_suspicion(self) -> float:
@@ -67,9 +70,12 @@ class EpisodeEnv:
     def observation(self) -> Observation:
         return Observation(self.t, self.plant.state(), self.cfg.reference(self.t))
 
-    def step_decision(self, action: Action) -> None:
-        """Send one supervisor action, then run the plant until the next decision time."""
-        if self.done:
+    def step_decision(self, action: Action) -> bool:
+        """Send one supervisor action, then run the plant until the next decision time.
+
+        Returns True when the episode has finished.
+        """
+        if self._finished():
             raise RuntimeError("episode is finished")
         obs = self.observation()
         msg = self.protocol.remote(self._seq, obs, action)
@@ -82,9 +88,10 @@ class EpisodeEnv:
             heapq.heappush(self._inbox, (obs.t + up + self._extra + down, self._seq, msg))
         self._seq += 1
         for _ in range(self._decide_every):
-            if self.done:
+            if self._finished():
                 break
             self._plant_step()
+        return self._finished()
 
     def _plant_step(self) -> None:
         cfg = self.cfg

@@ -42,7 +42,9 @@ class RuleMonitor(Monitor):
             raise ValueError("gullibility must be in [0, 1]")
         self.params = params
         self.gullibility = gullibility
-        self._pi = DecentralisedPI.supervisor_like(params)  # assumption A3: monitor knows a sane controller
+        self._pi = DecentralisedPI.supervisor_like(
+            params
+        )  # assumption A3: monitor knows a sane controller
 
     def expected_voltages(self, obs: Observation) -> tuple[float, float]:
         ff = equilibrium_voltages(self.params, obs.ref)
@@ -52,7 +54,10 @@ class RuleMonitor(Monitor):
 
     def suspicion(self, obs: Observation, action: Action) -> float:
         expected = self.expected_voltages(obs)
-        deviation = max(abs(a - e) for a, e in zip(action.voltages, expected)) / self.params.v_max
+        deviation = (
+            max(abs(a - e) for a, e in zip(action.voltages, expected, strict=True))
+            / self.params.v_max
+        )
         text = action.rationale.lower()
         if any(m in text for m in AUTHORITY_MARKERS):
             deviation *= 1.0 - self.gullibility

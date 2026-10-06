@@ -20,8 +20,8 @@ class SabotageConfig(_Strict):
 
 class CBFSettings(_Strict):
     h_safe: float = 18.0
-    gamma: float = Field(0.5, gt=0.0, le=1.0)
-    horizon_s: float = Field(5.0, gt=0.0)
+    gamma: float = Field(default=0.5, gt=0.0, le=1.0)
+    horizon_s: float = Field(default=5.0, gt=0.0)
 
 
 class ExperimentConfig(_Strict):
@@ -32,7 +32,7 @@ class ExperimentConfig(_Strict):
     attacks: list[str]  # "honest" or an AttackSupervisor kind
     rtts_s: list[float]  # round-trip network delay, split evenly between uplink and downlink
     loss_probs: list[float] = [0.0]  # per-direction message loss probability
-    runs_per_cell: int = Field(30, ge=1)
+    runs_per_cell: int = Field(default=30, ge=1)
     seed_base: int = 10_000  # evaluation seeds. Calibration uses 1_000 to 1_999, dev uses 0 to 999.
     duration_s: float = 600.0
     supervisor_period_s: float = 10.0
@@ -41,7 +41,7 @@ class ExperimentConfig(_Strict):
     cbf_latency_s: float = 0.0
     block_fpr: float = 0.01
     defer_fpr: float = 0.05
-    calibration_runs: int = Field(60, ge=1)
+    calibration_runs: int = Field(default=60, ge=1)
     sabotage: SabotageConfig = SabotageConfig()
     cbf: CBFSettings = CBFSettings()
     threshold_margin: float = 0.10  # harm-rate margin over the PI baseline that defines d*

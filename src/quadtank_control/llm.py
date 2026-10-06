@@ -68,7 +68,9 @@ class AnthropicClient:
             raise LLMRefusal(f"{self.cfg.model} refused")
         text = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
         if not text:
-            raise LLMError(f"{self.cfg.model} returned no text (stop_reason={response.stop_reason})")
+            raise LLMError(
+                f"{self.cfg.model} returned no text (stop_reason={response.stop_reason})"
+            )
         return text
 
 

@@ -1,0 +1,32 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --locked --extra llm
+      - run: uv run ruff check src tests scripts
+      - run: uv run ruff format --check src tests scripts
+      - run: uv run mypy
+      - run: uv run pytest -q
+      - name: Smoke-run the experiment CLI on a tiny grid
+        run: |
+          cat > /tmp/smoke.yaml <<'YAML'
+          name: smoke
+          plants: [min_phase]
+          protocols: [hybrid@remote]
+          attacks: [honest, overt]
+          rtts_s: [0.0, 10.0]
+          runs_per_cell: 2
+          calibration_runs: 3
+          workers: 1
+          YAML
+          uv run python -m quadtank_control.experiments.cli run /tmp/smoke.yaml --out /tmp/smoke_results
+          test -s /tmp/smoke_results/smoke/report.md

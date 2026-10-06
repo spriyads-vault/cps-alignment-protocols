@@ -21,7 +21,7 @@ class DecentralisedPI:
     _integral: list[float] = field(default_factory=lambda: [0.0, 0.0])
 
     @classmethod
-    def for_plant(cls, params: QuadTankParams) -> "DecentralisedPI":
+    def for_plant(cls, params: QuadTankParams) -> DecentralisedPI:
         """Gains found by hand-tuning on a +2/-2 cm step. Non-minimum-phase needs
         low gain and swapped pairing, otherwise it goes unstable."""
         if params.minimum_phase:
@@ -29,7 +29,7 @@ class DecentralisedPI:
         return cls(params, kp=(0.5, 0.5), ki=(0.005, 0.005), swapped=True)
 
     @classmethod
-    def supervisor_like(cls, params: QuadTankParams) -> "DecentralisedPI":
+    def supervisor_like(cls, params: QuadTankParams) -> DecentralisedPI:
         """Gains for a controller running at the 10 s supervisor period.
 
         Found by grid search on dev seeds 0 to 2 (never on evaluation seeds): lowest

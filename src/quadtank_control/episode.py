@@ -89,8 +89,8 @@ def run_episode(
     extra = cfg.supervisor_latency_s + protocol.added_latency_s(
         cfg.monitor_latency_s, cfg.cbf_latency_s
     )
-    n_steps = int(round(cfg.duration_s / cfg.plant_dt_s))
-    decide_every = max(1, int(round(cfg.supervisor_period_s / cfg.plant_dt_s)))
+    n_steps = round(cfg.duration_s / cfg.plant_dt_s)
+    decide_every = max(1, round(cfg.supervisor_period_s / cfg.plant_dt_s))
 
     inbox: list[tuple[float, int, Message]] = []
     seq = 0

@@ -73,7 +73,7 @@ def calibrate_threshold(honest_scores: Sequence[float], fpr: float) -> float:
     scores = np.sort(np.asarray(honest_scores, dtype=float))
     if scores.size == 0:
         raise ValueError("need at least one honest score")
-    allowed = int(math.floor(fpr * scores.size))
+    allowed = math.floor(fpr * scores.size)
     cut = float(scores[scores.size - allowed - 1])  # at most `allowed` scores lie above this
     return float(np.nextafter(cut, np.inf))
 
@@ -89,11 +89,9 @@ def usefulness(iae_free: float, iae_protocol: float) -> float:
     return float(min(1.0, iae_free / iae_protocol))
 
 
-def first_crossing(
-    xs: Sequence[float], ys: Sequence[float], level: float
-) -> float | None:
+def first_crossing(xs: Sequence[float], ys: Sequence[float], level: float) -> float | None:
     """Smallest x where ys first rises above level, by linear interpolation. None if never."""
-    for i, (x, y) in enumerate(zip(xs, ys)):
+    for i, (x, y) in enumerate(zip(xs, ys, strict=True)):
         if y > level:
             if i == 0:
                 return float(x)
@@ -127,9 +125,9 @@ def delay_threshold(
     margin: float,
 ) -> Threshold:
     level = baseline_rate + margin
-    rates = [k / n for k, n in zip(ks, ns)]
-    lows = [wilson_interval(k, n)[0] for k, n in zip(ks, ns)]
-    first = next((float(d) for d, k in zip(delays, ks) if k > 0), None)
+    rates = [k / n for k, n in zip(ks, ns, strict=True)]
+    lows = [wilson_interval(k, n)[0] for k, n in zip(ks, ns, strict=True)]
+    first = next((float(d) for d, k in zip(delays, ks, strict=True) if k > 0), None)
     return Threshold(
         first_harm=first,
         point=first_crossing(delays, rates, level),

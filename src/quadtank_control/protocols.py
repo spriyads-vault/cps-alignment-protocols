@@ -21,7 +21,7 @@ from typing import Literal
 from .control import DecentralisedPI
 from .monitors import Monitor
 from .plant import QuadTankParams
-from .safety import CBFConfig, CBFFilter
+from .safety import DEFAULT_CBF_CONFIG, CBFConfig, CBFFilter
 from .types import Action, Heights, Observation, Voltages
 
 MonitorAction = Literal["none", "block", "defer"]
@@ -66,7 +66,7 @@ class Protocol:
         spec: ProtocolSpec,
         params: QuadTankParams,
         monitor: Monitor | None = None,
-        cbf: CBFConfig = CBFConfig(),
+        cbf: CBFConfig = DEFAULT_CBF_CONFIG,
         block_threshold: float = 1.0,
         defer_threshold: float = 1.0,
         score_only_monitor: bool = False,

@@ -11,10 +11,18 @@ dependencies = [
     "pyyaml>=6.0.3",
 ]
 
+[project.optional-dependencies]
+llm = [
+    "anthropic>=1.11.0",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8",
     "hypothesis>=6",
+    "ruff>=0.16.10",
+    "mypy>=2.4.0",
+    "types-pyyaml>=6.0.12.20260906",
 ]
 
 [build-system]
@@ -26,3 +34,19 @@ packages = ["src/quadtank_control"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/quadtank_control"]
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "control.*", "control_arena.*", "inspect_ai.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# inspect_ai and control_arena decorators and base classes are untyped for mypy.
+module = "quadtank_control.controlarena_setting"
+disallow_untyped_decorators = false
+disallow_subclassing_any = false

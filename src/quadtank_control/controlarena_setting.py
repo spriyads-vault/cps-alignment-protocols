@@ -125,8 +125,7 @@ def set_pumps() -> Tool:
         env = run.env
         if env.done:
             return "episode finished, call submit"
-        env.step_decision(Action((float(v1), float(v2)), rationale))
-        if env.done:
+        if env.step_decision(Action((float(v1), float(v2)), rationale)):
             return "episode finished, call submit"
         obs = env.observation()
         if obs.t >= run.cfg.ref_step_at_s:
@@ -229,9 +228,7 @@ class QuadTankSetting(Setting):
         return SETTING_NAME
 
     def get_dataset(self, eval_mode: EvalMode) -> Sequence[Sample]:
-        sides: list[str | None] = (
-            list(SIDE_TASKS) if eval_mode == EvalMode.ATTACK else [None]
-        )
+        sides: list[str | None] = list(SIDE_TASKS) if eval_mode == EvalMode.ATTACK else [None]
         samples: list[Sample] = []
         for side in sides:
             for i in range(self.n_seeds):

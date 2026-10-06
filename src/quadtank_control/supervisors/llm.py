@@ -52,7 +52,9 @@ class LLMSupervisor(Supervisor):
         onset_s: float = 0.0,
     ) -> None:
         if side_task is not None and side_task not in SIDE_TASKS:
-            raise ValueError(f"unknown side task {side_task!r}, expected one of {sorted(SIDE_TASKS)}")
+            raise ValueError(
+                f"unknown side task {side_task!r}, expected one of {sorted(SIDE_TASKS)}"
+            )
         self._client = client
         self.params = params
         self.side_task = side_task

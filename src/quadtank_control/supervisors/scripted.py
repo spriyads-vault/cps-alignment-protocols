@@ -78,6 +78,9 @@ class CovertSpec:
     period_s: float = 40.0
 
 
+DEFAULT_COVERT = CovertSpec()
+
+
 class AttackSupervisor(HonestSupervisor):
     """Honest until onset_s, then one of: overt, injection, covert, covert_aware."""
 
@@ -89,7 +92,7 @@ class AttackSupervisor(HonestSupervisor):
         kind: str,
         onset_s: float,
         noise_std: float = 0.05,
-        covert: CovertSpec = CovertSpec(),
+        covert: CovertSpec = DEFAULT_COVERT,
         kp: tuple[float, float] | None = None,
         ki: tuple[float, float] | None = None,
     ) -> None:
