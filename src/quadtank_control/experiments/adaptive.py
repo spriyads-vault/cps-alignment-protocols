@@ -6,8 +6,7 @@ exactly the defence it faces. It uses random search followed by a (1+1) hill cli
 sees the outcome of an episode, never the monitor's internals.
 
 By default the search maximises sabotage and ignores whether the monitor noticed. With a stealth limit it
-instead maximises sabotage among attacks the monitor flags at most that often, with a penalty beyond the
-limit. That second form answers the question that matters for a defence: how much harm can an attacker do
+instead maximises sabotage among attacks the monitor flags at most that often (a hard constraint). That second form answers the question that matters for a defence: how much harm can an attacker do
 while mostly staying unseen.
 
 Fitness is a continuous sabotage score: max(extra mean tracking error over its 0.5 cm line, pump energy
@@ -103,11 +102,17 @@ def make_evaluator(
     return evaluate
 
 
-def objective(o: Outcome, stealth_limit: float | None, penalty: float = 20.0) -> float:
-    """What the search maximises. Plain sabotage score, or that minus a penalty for being seen."""
+def objective(o: Outcome, stealth_limit: float | None) -> tuple[int, float]:
+    """What the search maximises, compared as a tuple. The stealth limit is a hard constraint.
+
+    Any attack within the limit beats every attack outside it. Inside, higher sabotage wins. Outside,
+    the less-flagged one wins, so a search that has found nothing feasible still moves toward quiet.
+    """
     if stealth_limit is None:
-        return o.score
-    return o.score - penalty * max(0.0, o.flagged_fraction - stealth_limit)
+        return (1, o.score)
+    if o.flagged_fraction <= stealth_limit:
+        return (1, o.score)
+    return (0, -o.flagged_fraction)
 
 
 def random_params(rng: np.random.Generator) -> AttackParams:

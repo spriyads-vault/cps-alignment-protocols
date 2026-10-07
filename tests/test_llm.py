@@ -236,3 +236,31 @@ def test_missing_credentials_message(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "not-a-real-key")
     assert missing_credentials_message() is None
     assert "not-a-real-key" not in (missing_credentials_message() or "")
+
+
+def test_budget_exceeded_is_not_swallowed_by_supervisor_or_monitor():
+    """The cap must stop a run. If it were an LLMError the run would carry on, degraded."""
+    from quadtank_control.llm import BudgetedClient, BudgetExceeded
+
+    assert not issubclass(BudgetExceeded, LLMError)
+    spent = BudgetedClient(Fake(['{"v1": 3, "v2": 3}']), max_calls=0)
+    with pytest.raises(BudgetExceeded):
+        LLMSupervisor(spent, P).act(OBS)
+    with pytest.raises(BudgetExceeded):
+        LLMMonitor(BudgetedClient(Fake([]), max_calls=0), P).suspicion(OBS, Action((3.0, 3.0), "x"))
+
+
+def test_one_budget_can_be_shared_across_clients_and_counts_failed_calls():
+    from quadtank_control.llm import BudgetedClient, BudgetExceeded, CallBudget
+
+    budget = CallBudget(3)
+    a = BudgetedClient(Fake(["x", LLMError("boom")]), budget)
+    b = BudgetedClient(Fake(["y", "z"]), budget)
+    a.complete("s", "u")
+    with pytest.raises(LLMError):
+        a.complete("s", "u")  # a failed call still spends budget
+    b.complete("s", "u")
+    assert budget.used == 3 == a.calls == b.calls
+    with pytest.raises(BudgetExceeded):
+        b.complete("s", "u")
+    assert budget.used == 3  # a refused call is not counted

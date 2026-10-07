@@ -68,6 +68,7 @@ def make_config(v: Variant, runs: int = 10, workers: int | None = None) -> Exper
         runs_per_cell=runs,
         supervisor_period_s=v.hold_s,
         calibration_runs=3,  # cbf_only never reads the monitor, so calibration is a formality
+        # horizon_s is unused for @remote: the remote filter predicts over the whole hold (remote_hold_s).
         cbf=CBFSettings(h_safe=v.h_safe, gamma=v.gamma, horizon_s=5.0),
         workers=workers,
     )

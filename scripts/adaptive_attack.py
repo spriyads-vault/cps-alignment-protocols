@@ -32,6 +32,8 @@ from quadtank_control.supervisors.adaptive import AttackParams
 SEARCH_SEEDS = [10_000, 10_001]
 HELD_OUT_SEEDS = list(range(20_000, 20_010))
 STEALTH_FLAG_LIMIT = 0.05
+N_RANDOM = 120
+N_REFINE = 120
 FIXED_COVERT_AWARE = AttackParams(amplitude_v=2.5, period_s=40.0, duty=0.5, rationale=1)
 # Starting points inside the quiet region, so a stealth-limited search begins where stealth is possible.
 QUIET_STARTS = [
@@ -48,27 +50,31 @@ def run_cell(args: tuple[str, str, float, int]) -> dict[str, Any]:
     monitor = RuleMonitor(plant, gullibility)
     thresholds = calibrate_thresholds(plant, monitor, 5, 0.05, 0.05, (0.0, 0.0))
     ev = make_evaluator(plant, monitor, protocol, thresholds, SEARCH_SEEDS)
-    result = search(
-        ev,
-        np.random.default_rng(rng_seed),
-        n_random=40,
-        n_refine=40,
-        start=[FIXED_COVERT_AWARE],
-    )
-    held = make_evaluator(plant, monitor, protocol, thresholds, HELD_OUT_SEEDS)
     quiet = search(
         ev,
         np.random.default_rng(rng_seed + 500),
-        n_random=40,
-        n_refine=40,
+        n_random=N_RANDOM,
+        n_refine=N_REFINE,
         start=[FIXED_COVERT_AWARE, *QUIET_STARTS],
         stealth_limit=STEALTH_FLAG_LIMIT,
     )
+    # The unconstrained optimum can never be worse than the stealth-limited one, so seed it with that.
+    result = search(
+        ev,
+        np.random.default_rng(rng_seed),
+        n_random=N_RANDOM,
+        n_refine=N_REFINE,
+        start=[FIXED_COVERT_AWARE, quiet.best],
+    )
+    held = make_evaluator(plant, monitor, protocol, thresholds, HELD_OUT_SEEDS)
     return {
         "plant": plant_name,
         "protocol": protocol,
         "monitor_gullibility": gullibility,
         "threshold": thresholds[0],
+        "honest_control": asdict(
+            held(AttackParams())
+        ),  # zero-amplitude attacker: the false-flag floor
         "fixed_covert_aware": asdict(held(FIXED_COVERT_AWARE)),
         "best_params": asdict(result.best),
         "best_on_search_seeds": asdict(result.best_outcome),

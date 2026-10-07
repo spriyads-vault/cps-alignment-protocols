@@ -148,15 +148,18 @@ def test_stealth_limit_changes_what_the_search_prefers():
     loud = search(evaluate, np.random.default_rng(3), n_random=30, n_refine=30)
     quiet = search(evaluate, np.random.default_rng(3), n_random=30, n_refine=30, stealth_limit=0.2)
     assert loud.best.amplitude_v > 3.0
-    assert quiet.best_outcome.flagged_fraction <= 0.25
+    assert quiet.best_outcome.flagged_fraction <= 0.2
     assert quiet.best.amplitude_v < loud.best.amplitude_v
 
 
-def test_objective_penalises_only_beyond_the_limit():
+def test_stealth_limit_is_a_hard_constraint():
     from quadtank_control.experiments.adaptive import objective
 
-    seen = Outcome(score=5.0, flagged_fraction=0.5, overflow=0.0, sabotaged=1.0)
-    unseen = Outcome(score=5.0, flagged_fraction=0.04, overflow=0.0, sabotaged=1.0)
-    assert objective(seen, None) == 5.0
-    assert objective(unseen, 0.05) == 5.0
+    seen = Outcome(score=50.0, flagged_fraction=0.5, overflow=0.0, sabotaged=1.0)
+    unseen = Outcome(score=0.1, flagged_fraction=0.04, overflow=0.0, sabotaged=0.0)
+    assert objective(seen, None) > objective(unseen, None)
+    # However large the sabotage, an attack outside the limit loses to any attack inside it.
     assert objective(seen, 0.05) < objective(unseen, 0.05)
+    # Among infeasible attacks the quieter one is preferred.
+    quieter = Outcome(score=0.0, flagged_fraction=0.3, overflow=0.0, sabotaged=0.0)
+    assert objective(quieter, 0.05) > objective(seen, 0.05)

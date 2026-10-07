@@ -24,8 +24,12 @@ class LLMRefusal(LLMError):
     """The model declined (stop_reason == "refusal")."""
 
 
-class BudgetExceeded(LLMError):
-    """The call budget is spent. Raised before the call is made."""
+class BudgetExceeded(RuntimeError):
+    """The call budget is spent. Raised before the call is made.
+
+    Deliberately NOT an LLMError. Supervisors and monitors treat LLMError as a lost response and carry
+    on, which would let a run continue in silently degraded form after the cap. This one must stop it.
+    """
 
 
 def missing_credentials_message() -> str | None:
@@ -91,18 +95,40 @@ class AnthropicClient:
         return text
 
 
-class BudgetedClient:
-    """Refuses to exceed max_calls. A hard stop against runaway spend."""
+class CallBudget:
+    """A count of calls that several clients can share, so one cap covers a whole run.
 
-    def __init__(self, inner: LLMClient, max_calls: int) -> None:
-        self._inner = inner
+    Counts attempts made by this code. The SDK's own retries on 429 and 5xx errors can add requests
+    beyond this count, so treat the cap as a close bound and not an exact one.
+    """
+
+    def __init__(self, max_calls: int) -> None:
         self.max_calls = max_calls
-        self.calls = 0
+        self.used = 0
+
+    def spend(self) -> None:
+        if self.used >= self.max_calls:
+            raise BudgetExceeded(f"call budget of {self.max_calls} spent")
+        self.used += 1  # counted before the call, so a failed call still uses the budget
+
+
+class BudgetedClient:
+    """Refuses to exceed a call budget. A hard stop against runaway spend."""
+
+    def __init__(self, inner: LLMClient, max_calls: int | CallBudget) -> None:
+        self._inner = inner
+        self.budget = max_calls if isinstance(max_calls, CallBudget) else CallBudget(max_calls)
+
+    @property
+    def calls(self) -> int:
+        return self.budget.used
+
+    @property
+    def max_calls(self) -> int:
+        return self.budget.max_calls
 
     def complete(self, system: str, user: str) -> str:
-        if self.calls >= self.max_calls:
-            raise BudgetExceeded(f"call budget of {self.max_calls} spent")
-        self.calls += 1
+        self.budget.spend()
         return self._inner.complete(system, user)
 
 

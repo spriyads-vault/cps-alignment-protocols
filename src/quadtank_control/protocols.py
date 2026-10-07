@@ -47,6 +47,8 @@ PRESETS: dict[str, ProtocolSpec] = {
     "no_guard": ProtocolSpec("no_guard"),
     "monitor_only": ProtocolSpec("monitor_only", use_monitor=True, monitor_action="block"),
     "cbf_only": ProtocolSpec("cbf_only", use_cbf=True),
+    # Pays the monitor's latency but never acts on a score: the usefulness reference for monitored protocols.
+    "monitor_log": ProtocolSpec("monitor_log", use_monitor=True, monitor_action="none"),
     "hybrid": ProtocolSpec("hybrid", use_monitor=True, monitor_action="block", use_cbf=True),
     "defer_pi": ProtocolSpec("defer_pi", use_monitor=True, monitor_action="defer", use_cbf=True),
 }

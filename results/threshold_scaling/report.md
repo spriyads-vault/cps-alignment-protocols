@@ -32,10 +32,9 @@ for this grid. The prediction is recorded as failed because that is what it said
 
 ## Reading it
 
-- The remote filter's delay budget is about one hold period: 1.0 to 1.5 times the hold in 5 of 6 cells, and 0.9
-  times in the sixth. A longer hold buys more tolerance, since the filter reasons about a longer window.
+- The remote filter's delay budget is about one hold period: 0.9 to 1.6 times the hold in all six cells. A longer hold buys more tolerance, since the filter reasons about a longer window.
 - A looser barrier (larger gamma) cuts the budget sharply: 20.4 s to 8.2 s on the minimum-phase plant.
-- Tightening the barrier by 2 cm buys about 4 s. That is the practical lever if the filter has to sit away from the
+- Tightening the barrier by 2 cm bought about 4 s here, though part of that is room below the rim rather than filter behaviour. That is the practical lever if the filter has to sit away from the
   plant: spend margin to buy delay tolerance.
 - This is consistent with the extra-exposure mechanism (a delay D adds exposure beyond the window the filter
   judged), but it does not prove it. It shows the dependencies the mechanism predicts.

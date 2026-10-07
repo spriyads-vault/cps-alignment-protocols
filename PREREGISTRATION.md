@@ -15,7 +15,8 @@ about whether real LLM monitors fall for injected text. That half of claim C1 ne
 the real-model run (`monitors/llm.py`, not yet run, needs API keys and a budget).
 
 The attackers are scripted and do not adapt to the protocol. They bound the guards
-from one side only. Adaptive attackers are experiment 4 and are not built.
+from one side only. A parametric black-box attacker search was run afterwards as exploratory work (amendment A5). A
+model-driven rationale adversary (experiment 4) is built but not yet run.
 
 ## 2. Claims
 

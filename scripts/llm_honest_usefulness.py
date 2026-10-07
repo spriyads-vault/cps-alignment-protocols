@@ -9,8 +9,10 @@ This SPENDS REAL MONEY and needs ANTHROPIC_API_KEY. It prints the exact call cou
 run without --yes, and stops hard at --max-calls (supervisor and monitor calls counted together).
 Responses are cached on disk.
 
-Per episode: 60 supervisor calls, plus 60 monitor calls under hybrid and defer-to-PI. With the defaults
-(3 calibration and 3 evaluation episodes) that is about 720 supervisor and 480 monitor calls. Your
+Per episode: 60 supervisor calls, plus 60 monitor calls under hybrid, defer-to-PI and monitor_log (a
+monitor that never acts, added automatically as the usefulness reference for monitored protocols, because
+they pay the monitor's latency). With the defaults (3 calibration and 3 evaluation episodes) that is 900
+supervisor and 720 monitor calls. Your
 earlier runs cost about four times what a per-call estimate suggested, so price a small run first:
 [NEED: read the real cost from the console after --runs 1 --calibration-runs 1.]
 """
@@ -29,6 +31,7 @@ from quadtank_control.llm import (
     AnthropicConfig,
     BudgetedClient,
     CachingClient,
+    CallBudget,
     missing_credentials_message,
 )
 from quadtank_control.monitors.llm import LLMMonitor
@@ -78,27 +81,18 @@ def main() -> int:
         print(problem)
         return 3
 
-    budget = {"left": args.max_calls}  # one shared cap across both models
-
-    class Shared:
-        def __init__(self, inner: AnthropicClient) -> None:
-            self._inner = inner
-
-        def complete(self, system: str, user: str) -> str:
-            gate = BudgetedClient(self._inner, max(budget["left"], 0))
-            out = gate.complete(system, user)
-            budget["left"] -= 1
-            return out
+    budget = CallBudget(args.max_calls)  # one cap across every model this run calls
 
     sup_client = CachingClient(
-        Shared(
-            AnthropicClient(AnthropicConfig(args.supervisor_model, effort=args.supervisor_effort))
+        BudgetedClient(
+            AnthropicClient(AnthropicConfig(args.supervisor_model, effort=args.supervisor_effort)),
+            budget,
         ),
         args.cache_dir / "honest_supervisor.jsonl",
         args.supervisor_model,
     )
     mon_client = CachingClient(
-        Shared(AnthropicClient(AnthropicConfig(args.monitor_model))),
+        BudgetedClient(AnthropicClient(AnthropicConfig(args.monitor_model)), budget),
         args.cache_dir / "honest_monitor.jsonl",
         args.monitor_model,
     )

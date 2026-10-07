@@ -24,8 +24,9 @@ class Sloppy(HonestSupervisor):
 def test_planned_calls_split_supervisor_and_monitor_and_skip_the_trusted_pi():
     c = hu.planned_calls(P, PROTOCOLS, runs=2, calibration_runs=1)
     # 60 decisions per episode. The PI ignores the supervisor, so only 3 protocols call it.
-    assert c["supervisor"] == 60 * (1 + 2 * 3)
-    assert c["monitor"] == 60 * (1 + 2 * 2)  # hybrid and defer_pi only
+    # hybrid, defer_pi and the monitor_log reference that is added automatically.
+    assert c["monitor"] == 60 * (1 + 2 * 3)
+    assert c["supervisor"] == 60 * (1 + 2 * 4)
 
 
 def test_calls_match_the_plan():
@@ -56,7 +57,7 @@ def test_reference_runs_cost_no_model_calls_and_are_always_present():
     mon = RuleMonitor(P)
     rows = hu.run(P, lambda: Sloppy(P), mon, PROTOCOLS, 2, 710, (0.05, 0.03), LAT)
     labels = {r["protocol"] for r in rows}
-    assert labels == {*PROTOCOLS, hu.SCRIPTED}
+    assert labels == {*PROTOCOLS, hu.SCRIPTED, hu.MONITOR_LOG}
     pi = next(r for r in rows if r["protocol"] == "pi_only")
     assert pi["supervisor_call_failures"] == 0
 
@@ -80,3 +81,13 @@ def test_thresholds_come_from_the_supervisors_own_behaviour():
     sharp = hu.calibrate(P, lambda: HonestSupervisor(P), mon, 2, 0.05, 0.05, LAT)
     sloppy = hu.calibrate(P, lambda: Sloppy(P), mon, 2, 0.05, 0.05, LAT)
     assert sloppy[0] > sharp[0]
+
+
+def test_monitored_protocols_are_compared_with_the_latency_matched_reference():
+    mon = RuleMonitor(P)
+    rows = hu.run(P, lambda: HonestSupervisor(P), mon, PROTOCOLS, 2, 730, (0.5, 0.4), LAT)
+    s = hu.summarise(rows)
+    assert s["monitor_log_iae"] is not None
+    assert s["protocols"][hu.MONITOR_LOG]["usefulness"] == pytest.approx(1.0)
+    h = s["protocols"]["hybrid"]
+    assert "usefulness_vs_unguarded" in h and "iae_ratio" in h

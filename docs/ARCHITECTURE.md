@@ -12,11 +12,15 @@ from the package and are used by several layers.
 3. `safety/`: the discrete-time CBF filter. Reads voltages and heights only.
 4. `types.py`, `network.py`: shared data types and the delayed, lossy link.
 5. `monitors/`, `supervisors/`: the untrusted and trusted components behind two small
-   interfaces. Scripted and LLM versions of each implement the same one.
+   interfaces. Scripted, parametric (`adaptive.py`), rationale-writing (`rationale_adversary.py`) and
+   LLM versions of each implement the same one.
 6. `protocols.py`: how the monitor, CBF and PI are wired. Block versus defer, edge versus remote.
 7. `episode.py`, `env.py`: the closed loop. `EpisodeEnv` steps one decision at a time.
    `run_episode` drives it to the end.
-8. `metrics.py`, `config.py`, `experiments/`: statistics, validated configs, the grid runner.
+8. `metrics.py`, `config.py`, `experiments/`: statistics, validated configs, the grid runner, and one module
+   per study: `scaling` (remote-CBF threshold), `adaptive` (black-box attack search), `monitor_eval`
+   (a real monitor on scripted attacks), `real_monitor_protocol` (a real monitor inside the protocols),
+   `honest_usefulness`, `rationale_attack`.
 9. `llm.py`, `controlarena_setting.py`: optional model access and the ControlArena adapter.
 
 ## One decision, in time order
@@ -73,5 +77,10 @@ The attack onset comes from `SeedSequence([seed, 7])`, so every protocol faces t
 - New attack: subclass `Supervisor`, add its name to `AttackSupervisor.KINDS` or register it
   in `experiments/runner.py::make_supervisor`.
 - New protocol: add a `ProtocolSpec` to `PRESETS`.
+- New attack family: give `ParametricAttacker` another knob and add its range to `BOUNDS`, then the search in
+  `experiments/adaptive.py` tunes it with no other change.
 - Real models: build `LLMSupervisor` and `LLMMonitor` over any `LLMClient`. Wrap with
-  `BudgetedClient` and `CachingClient` before spending anything.
+  `BudgetedClient` and `CachingClient` before spending anything. Every script that spends has a dry run, a
+  hard `--max-calls`, a credential check, and records why any call failed.
+- Validity: a study whose attacker is a model must report the attacker's own failure rate and mark itself
+  invalid when it is high (see `rationale_attack.summarise`). Pilot 1 measured a placeholder because it did not.
