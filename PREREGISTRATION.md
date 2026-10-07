@@ -179,6 +179,43 @@ against the covert-aware attacker fell from 3 of 3 to 1 of 3, equal to its rate 
 artefact, F7), and defer-to-PI stayed at 0 of 3. So C2c depends on the monitor's false-alarm budget (it holds at
 1%, not at 5%), and C2d is contradicted in direction at both, on 3 episodes that cannot reject 0.5.
 
+### Amendment A4 (2026-10-07): a mechanism test for the remote-CBF threshold, predictions first
+
+There is no closed-form theory of the remote-CBF delay threshold here. An attempt to derive one from a linearised
+"active-constraint" filter failed before it started: with the 10 s hold the filter does not settle on the barrier.
+It repeatedly loses feasibility and falls back to pumps off (17 to 19 times per episode in experiment 3, at every
+delay including zero), so the closed loop is a limit cycle, not a fixed point.
+
+What the experiment 3 data does show, read after the fact: peak height rises smoothly with delay (16.2 cm at zero,
+17.0 at 5 s, 18.7 at 8 s, 19.4 at 10 s, 19.9 at 12 s) and is stopped by the 20 cm rim. Episodes differ little, so
+the overflow count jumps from 0 of 30 to 30 of 30 as the mean peak reaches the rim. The "cliff" in the overflow
+rate is the rim clipping a smooth ramp, not a sudden instability.
+
+Mechanism hypothesis: a delay D means the command is applied D seconds later than the window the filter reasoned
+about, so the plant gets extra exposure to commands the filter judged on a stale state. Overshoot should then grow
+with D, depend on how long the filter's hold is, depend on how loose the barrier is, and be reducible by tightening
+the barrier by about the rise rate times the delay.
+
+Setup, fixed before running (`scripts/threshold_scaling.py`): `cbf_only@remote` against the overt attack,
+both plants, 10 episodes per cell on seeds 10000 to 10009, effective delays 0 to 60 s. d* is the interpolated
+delay where the overflow rate first exceeds 0.10. Hold period H in {4, 10, 20} s (multiples of the 2 s plant step),
+barrier looseness gamma in {0.3, 0.5, 0.8}, filter barrier h_safe in {18, 17, 16} cm. Baseline H = 10, gamma = 0.5,
+h_safe = 18.
+
+Predictions:
+- P6. At gamma = 0.5 and h_safe = 18, d*(H = 20) is larger than d*(H = 4), on both plants.
+- P7. d*/H lies between 0.5 and 2.5 for all three H and both plants. If d* were set by the plant alone and
+  ignored H, this fails.
+- P8. At H = 10, d* does not increase with gamma, and d*(gamma = 0.8) is smaller than d*(gamma = 0.3).
+- P9. d* at the baseline reproduces experiment 3 (12.3 s minimum-phase, 12.4 s non-minimum-phase) within 3 s.
+- P10. At H = 10, each 1 cm of barrier tightening raises d* by between 1.5 and 6 s, and d*(h_safe = 16) is at
+  least 4 s above d*(h_safe = 18). Fails outside that band.
+
+If P10 holds it is the practical result: a remote filter can be given a known delay budget by tightening its
+barrier. If it fails, the extra-exposure story is wrong or incomplete. This is a test of a mechanism after the
+fact on a system already measured, so it is labelled as such. The predictions are the only part that is
+prospective.
+
 ## 6. Stop rules
 
 - PI cannot hold limits at zero delay: simulation is wrong. Passed (tests).
