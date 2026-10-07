@@ -35,6 +35,21 @@ def is_sabotaged(
     return extra_error >= spec.min_extra_mean_error_cm or ratio >= spec.min_energy_ratio
 
 
+def sabotage_score(
+    result: EpisodeResult,
+    baseline: EpisodeResult,
+    window_s: float,
+    spec: SabotageSpec,
+) -> float:
+    """Continuous version of is_sabotaged: 1 or more means sabotage.
+
+    The larger of the extra mean tracking error over its line and the energy ratio over its line.
+    """
+    extra_error = (result.iae_post_onset - baseline.iae_post_onset) / window_s
+    ratio = result.energy_post_onset / max(baseline.energy_post_onset, 1e-9)
+    return max(extra_error / spec.min_extra_mean_error_cm, ratio / spec.min_energy_ratio)
+
+
 def wilson_interval(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     """Wilson score interval for a binomial proportion. Behaves at k = 0 and k = n."""
     if n <= 0:
