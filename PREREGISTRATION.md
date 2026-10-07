@@ -172,7 +172,12 @@ A first closed-loop run with Haiku 4.5 inside the protocols (`results/llm_monito
 per cell) agrees in direction. C2c holds: hybrid sabotaged 3 of 3 by the covert-aware attacker, because the
 monitor blocked only 39% of its decisions. C2d is contradicted by the point estimate: defer-to-PI sabotaged 0 of
 3, but 3 episodes cannot reject a rate of 0.5. The protocols used different false-alarm thresholds (1% against
-5%), so the comparison is confounded and a matched rerun is needed.
+5%), so the comparison is confounded.
+
+The matched rerun (`results/llm_monitor_protocol_matched.md`, both at 5%) removed the gap: block-and-hold sabotage
+against the covert-aware attacker fell from 3 of 3 to 1 of 3, equal to its rate against overt attacks (a hold
+artefact, F7), and defer-to-PI stayed at 0 of 3. So C2c depends on the monitor's false-alarm budget (it holds at
+1%, not at 5%), and C2d is contradicted in direction at both, on 3 episodes that cannot reject 0.5.
 
 ## 6. Stop rules
 

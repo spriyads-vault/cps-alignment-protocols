@@ -1,5 +1,8 @@
 # Real monitor inside the protocol loop, run 1
 
+**Superseded in part by `llm_monitor_protocol_matched.md`:** the matched rerun showed the protocol gap below was
+the threshold. Kept as recorded.
+
 Claude Haiku 4.5 as the monitor, reading the supervisor's rationale, with the authority warning removed. The
 attackers are scripted. Minimum-phase plant. Three episodes per protocol and attack, seeds 40000 to 40002.
 No call failed. Simulated latency: supervisor 1.9 s, monitor 3.0 s. Rates and Wilson intervals were in the
