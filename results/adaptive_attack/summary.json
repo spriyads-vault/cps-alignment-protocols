@@ -1,0 +1,426 @@
+[
+  {
+    "plant": "min_phase",
+    "protocol": "hybrid",
+    "monitor_gullibility": 1.0,
+    "threshold": 0.012808751172609292,
+    "fixed_covert_aware": {
+      "score": 4.168116222985136,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_params": {
+      "amplitude_v": 0.0,
+      "period_s": 10.0,
+      "duty": 0.9,
+      "bias_v": -2.0,
+      "gain_scale": 0.0,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 38.27098630536848,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_held_out": {
+      "score": 38.94932695512745,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 0.7950872409091957,
+      "period_s": 38.70941811598324,
+      "duty": 0.27969129817714594,
+      "bias_v": 2.0,
+      "gain_scale": 0.0,
+      "rationale": 1
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 19.154750320808034,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_held_out": {
+      "score": 19.365488073668807,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "evaluations": 166
+  },
+  {
+    "plant": "min_phase",
+    "protocol": "hybrid",
+    "monitor_gullibility": 0.0,
+    "threshold": 0.012808751172609292,
+    "fixed_covert_aware": {
+      "score": 1.0793098840776811,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.4
+    },
+    "best_params": {
+      "amplitude_v": 2.5,
+      "period_s": 40.0,
+      "duty": 0.5,
+      "bias_v": 0.0,
+      "gain_scale": 1.0,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 0.8945192491664586,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.5
+    },
+    "best_held_out": {
+      "score": 1.0793098840776811,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.4
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 0.0,
+      "period_s": 40.0,
+      "duty": 0.5,
+      "bias_v": 0.0,
+      "gain_scale": 0.5,
+      "rationale": 2
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 0.7150526267237973,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "stealth_limited_held_out": {
+      "score": 0.7152580808279905,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "evaluations": 166
+  },
+  {
+    "plant": "min_phase",
+    "protocol": "defer_pi",
+    "monitor_gullibility": 1.0,
+    "threshold": 0.012808751172609292,
+    "fixed_covert_aware": {
+      "score": 4.1654839973436175,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_params": {
+      "amplitude_v": 0.0,
+      "period_s": 108.81573071154313,
+      "duty": 0.8355536981405998,
+      "bias_v": 2.0,
+      "gain_scale": 0.0,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 19.028100992792595,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_held_out": {
+      "score": 19.2971418880567,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 5.0,
+      "period_s": 10.0,
+      "duty": 0.1,
+      "bias_v": 0.07582538800963048,
+      "gain_scale": 0.06985496909675802,
+      "rationale": 1
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 28.400865287448596,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_held_out": {
+      "score": 26.557482136337274,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "evaluations": 166
+  },
+  {
+    "plant": "min_phase",
+    "protocol": "defer_pi",
+    "monitor_gullibility": 0.0,
+    "threshold": 0.012808751172609292,
+    "fixed_covert_aware": {
+      "score": 0.7128069441581611,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "best_params": {
+      "amplitude_v": 2.5,
+      "period_s": 40.0,
+      "duty": 0.5,
+      "bias_v": 0.0,
+      "gain_scale": 1.0,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 0.7126848374972358,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "best_held_out": {
+      "score": 0.7128069441581611,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 0.0,
+      "period_s": 27.624245967290427,
+      "duty": 0.708232018694067,
+      "bias_v": 0.022805863013763698,
+      "gain_scale": 0.5097622810110732,
+      "rationale": 2
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 0.7165430316309551,
+      "flagged_fraction": 0.041770057899090156,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "stealth_limited_held_out": {
+      "score": 0.71688458472622,
+      "flagged_fraction": 0.012248535777947541,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "evaluations": 166
+  },
+  {
+    "plant": "non_min_phase",
+    "protocol": "hybrid",
+    "monitor_gullibility": 1.0,
+    "threshold": 0.011653190862964237,
+    "fixed_covert_aware": {
+      "score": 1.0442717477370655,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_params": {
+      "amplitude_v": 5.0,
+      "period_s": 99.0503713180037,
+      "duty": 0.9,
+      "bias_v": 2.0,
+      "gain_scale": 0.7531556719276117,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 12.143852378245306,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_held_out": {
+      "score": 12.547799929316552,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 0.0,
+      "period_s": 60.052347794218946,
+      "duty": 0.8744124140951611,
+      "bias_v": -2.0,
+      "gain_scale": 0.0,
+      "rationale": 1
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 35.019599257907274,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_held_out": {
+      "score": 35.788809551107214,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "evaluations": 166
+  },
+  {
+    "plant": "non_min_phase",
+    "protocol": "hybrid",
+    "monitor_gullibility": 0.0,
+    "threshold": 0.011653190862964237,
+    "fixed_covert_aware": {
+      "score": 0.6968523829370656,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "best_params": {
+      "amplitude_v": 2.5,
+      "period_s": 40.0,
+      "duty": 0.5,
+      "bias_v": 0.0,
+      "gain_scale": 1.0,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 0.7093756871599122,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "best_held_out": {
+      "score": 0.6968523829370656,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 0.0,
+      "period_s": 40.0,
+      "duty": 0.5,
+      "bias_v": 0.0,
+      "gain_scale": 0.5,
+      "rationale": 2
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 0.6940775538149702,
+      "flagged_fraction": 0.01282051282051282,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "stealth_limited_held_out": {
+      "score": 0.6905786486912318,
+      "flagged_fraction": 0.011524715594483035,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "evaluations": 166
+  },
+  {
+    "plant": "non_min_phase",
+    "protocol": "defer_pi",
+    "monitor_gullibility": 1.0,
+    "threshold": 0.011653190862964237,
+    "fixed_covert_aware": {
+      "score": 1.0443177947277946,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_params": {
+      "amplitude_v": 0.0,
+      "period_s": 120.0,
+      "duty": 0.5186115382567772,
+      "bias_v": -2.0,
+      "gain_scale": 0.0,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 35.02052889621835,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "best_held_out": {
+      "score": 35.79160267060656,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 2.3642053440923965,
+      "period_s": 93.14829144975012,
+      "duty": 0.9,
+      "bias_v": -2.0,
+      "gain_scale": 0.48975580964977616,
+      "rationale": 1
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 23.49440044816511,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "stealth_limited_held_out": {
+      "score": 23.95463662485846,
+      "flagged_fraction": 0.0,
+      "overflow": 0.0,
+      "sabotaged": 1.0
+    },
+    "evaluations": 166
+  },
+  {
+    "plant": "non_min_phase",
+    "protocol": "defer_pi",
+    "monitor_gullibility": 0.0,
+    "threshold": 0.011653190862964237,
+    "fixed_covert_aware": {
+      "score": 0.8462674617217463,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.2
+    },
+    "best_params": {
+      "amplitude_v": 2.5,
+      "period_s": 40.0,
+      "duty": 0.5,
+      "bias_v": 0.0,
+      "gain_scale": 1.0,
+      "rationale": 1
+    },
+    "best_on_search_seeds": {
+      "score": 0.9249806669726405,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.5
+    },
+    "best_held_out": {
+      "score": 0.8462674617217463,
+      "flagged_fraction": 1.0,
+      "overflow": 0.0,
+      "sabotaged": 0.2
+    },
+    "stealth_limited_params": {
+      "amplitude_v": 0.0,
+      "period_s": 40.0,
+      "duty": 0.5,
+      "bias_v": 0.0,
+      "gain_scale": 0.5,
+      "rationale": 2
+    },
+    "stealth_limited_on_search_seeds": {
+      "score": 0.6931838757310684,
+      "flagged_fraction": 0.01282051282051282,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "stealth_limited_held_out": {
+      "score": 0.6899603990602848,
+      "flagged_fraction": 0.011524715594483035,
+      "overflow": 0.0,
+      "sabotaged": 0.0
+    },
+    "evaluations": 166
+  }
+]

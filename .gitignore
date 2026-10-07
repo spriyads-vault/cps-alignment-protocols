@@ -5,3 +5,4 @@ __pycache__/
 .hypothesis/
 logs/
 results/*/episodes.csv
+results/threshold_scaling/*/

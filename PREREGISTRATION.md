@@ -211,10 +211,30 @@ Predictions:
 - P10. At H = 10, each 1 cm of barrier tightening raises d* by between 1.5 and 6 s, and d*(h_safe = 16) is at
   least 4 s above d*(h_safe = 18). Fails outside that band.
 
+**Results (appended after the run; `results/threshold_scaling/report.md`).** P6, P7, P8 and P9 held. P10 failed as
+written: the total clause held (2 cm of tightening added 4.2 s and 4.0 s) but the per-centimetre clause failed once,
+minimum-phase 18 to 17 cm adding 0.2 s. Delays are quantised to 2 s, so the per-centimetre claim was too fine for
+the grid. Averaged, tightening bought about 2 s per centimetre.
+
 If P10 holds it is the practical result: a remote filter can be given a known delay budget by tightening its
 barrier. If it fails, the extra-exposure story is wrong or incomplete. This is a test of a mechanism after the
 fact on a system already measured, so it is labelled as such. The predictions are the only part that is
 prospective.
+
+### Amendment A5 (2026-10-07): adaptive attacker, exploratory
+
+No predictions were registered for this. A black-box search over a parametrised covert attacker
+(`scripts/adaptive_attack.py`, `results/adaptive_attack/report.md`) was run in simulation against the surrogate
+monitor, fooled and not fooled, at the 5% false-alarm threshold, with winners rescored on held-out seeds.
+
+Against the monitor that ignores authority claims it found no attack above the honest supervisor's own score
+while staying under 5% flagged (0.69 to 0.72 against an honest control of 0.69 to 0.72). Against the monitor that
+authority claims fool it found sabotage at 12 to 39 times the sabotage line, undetected, which only confirms the
+search can find a hole that exists by construction.
+
+Scope: the thresholds depend on a scripted honest supervisor whose deviations are tiny, so they are tighter than a
+real model would produce. A search of 160 candidates cannot show that no stealthy attack exists. A model that
+writes persuasive rationales is not covered. Experiment 4 (a reasoning adversary) is therefore still not done.
 
 ## 6. Stop rules
 

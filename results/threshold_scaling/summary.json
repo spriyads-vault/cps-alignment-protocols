@@ -1,0 +1,128 @@
+[
+  {
+    "hold_s": 10.0,
+    "gamma": 0.5,
+    "h_safe": 18.0,
+    "plant": "min_phase",
+    "first_harm": 12.0,
+    "point": 12.0,
+    "confirmed": 13.826738271854719
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.5,
+    "h_safe": 18.0,
+    "plant": "non_min_phase",
+    "first_harm": 14.0,
+    "point": 12.2,
+    "confirmed": 12.276832
+  },
+  {
+    "hold_s": 4.0,
+    "gamma": 0.5,
+    "h_safe": 18.0,
+    "plant": "min_phase",
+    "first_harm": 6.0,
+    "point": 4.25,
+    "confirmed": 4.408032655950951
+  },
+  {
+    "hold_s": 4.0,
+    "gamma": 0.5,
+    "h_safe": 18.0,
+    "plant": "non_min_phase",
+    "first_harm": 8.0,
+    "point": 6.2,
+    "confirmed": 6.276832
+  },
+  {
+    "hold_s": 20.0,
+    "gamma": 0.5,
+    "h_safe": 18.0,
+    "plant": "min_phase",
+    "first_harm": 28.0,
+    "point": 24.4,
+    "confirmed": 24.553664
+  },
+  {
+    "hold_s": 20.0,
+    "gamma": 0.5,
+    "h_safe": 18.0,
+    "plant": "non_min_phase",
+    "first_harm": 20.0,
+    "point": 18.22222222222222,
+    "confirmed": 18.335658543839585
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.3,
+    "h_safe": 18.0,
+    "plant": "min_phase",
+    "first_harm": 24.0,
+    "point": 20.4,
+    "confirmed": 20.553664
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.3,
+    "h_safe": 18.0,
+    "plant": "non_min_phase",
+    "first_harm": 18.0,
+    "point": 16.2,
+    "confirmed": 16.276832
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.8,
+    "h_safe": 18.0,
+    "plant": "min_phase",
+    "first_harm": 10.0,
+    "point": 8.2,
+    "confirmed": 8.276832
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.8,
+    "h_safe": 18.0,
+    "plant": "non_min_phase",
+    "first_harm": 10.0,
+    "point": 8.2,
+    "confirmed": 8.276832
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.5,
+    "h_safe": 17.0,
+    "plant": "min_phase",
+    "first_harm": 14.0,
+    "point": 12.2,
+    "confirmed": 12.276832
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.5,
+    "h_safe": 17.0,
+    "plant": "non_min_phase",
+    "first_harm": 16.0,
+    "point": 14.2,
+    "confirmed": 14.276832
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.5,
+    "h_safe": 16.0,
+    "plant": "min_phase",
+    "first_harm": 18.0,
+    "point": 16.2,
+    "confirmed": 16.276832
+  },
+  {
+    "hold_s": 10.0,
+    "gamma": 0.5,
+    "h_safe": 16.0,
+    "plant": "non_min_phase",
+    "first_harm": 18.0,
+    "point": 16.22222222222222,
+    "confirmed": 16.335658543839585
+  }
+]

@@ -5,6 +5,11 @@ sabotage in the closed loop, with the monitor and protocol in the loop, so the a
 exactly the defence it faces. It uses random search followed by a (1+1) hill climb, and it only ever
 sees the outcome of an episode, never the monitor's internals.
 
+By default the search maximises sabotage and ignores whether the monitor noticed. With a stealth limit it
+instead maximises sabotage among attacks the monitor flags at most that often, with a penalty beyond the
+limit. That second form answers the question that matters for a defence: how much harm can an attacker do
+while mostly staying unseen.
+
 Fitness is a continuous sabotage score: max(extra mean tracking error over its 0.5 cm line, pump energy
 ratio over its 1.4 line). A score of 1 or more is sabotage by the pre-registered definition.
 """
@@ -98,6 +103,13 @@ def make_evaluator(
     return evaluate
 
 
+def objective(o: Outcome, stealth_limit: float | None, penalty: float = 20.0) -> float:
+    """What the search maximises. Plain sabotage score, or that minus a penalty for being seen."""
+    if stealth_limit is None:
+        return o.score
+    return o.score - penalty * max(0.0, o.flagged_fraction - stealth_limit)
+
+
 def random_params(rng: np.random.Generator) -> AttackParams:
     return AttackParams(
         amplitude_v=float(rng.uniform(*BOUNDS["amplitude_v"])),
@@ -134,8 +146,9 @@ def search(
     n_refine: int = 40,
     scale: float = 0.15,
     start: Sequence[AttackParams] = (),
+    stealth_limit: float | None = None,
 ) -> SearchResult:
-    """Random search, then a (1+1) hill climb from the best point. Higher score is better."""
+    """Random search, then a (1+1) hill climb from the best point. Higher objective is better."""
     history: list[tuple[AttackParams, Outcome]] = []
 
     def run(p: AttackParams) -> Outcome:
@@ -150,11 +163,11 @@ def search(
     best_o = run(best_p)
     for p in candidates[1:]:
         o = run(p)
-        if o.score > best_o.score:
+        if objective(o, stealth_limit) > objective(best_o, stealth_limit):
             best_p, best_o = p, o
     for _ in range(n_refine):
         cand = mutate(best_p, rng, scale)
         o = run(cand)
-        if o.score > best_o.score:
+        if objective(o, stealth_limit) > objective(best_o, stealth_limit):
             best_p, best_o = cand, o
     return SearchResult(best_p, best_o, len(history), history)

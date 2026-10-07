@@ -17,7 +17,7 @@ Read `PREREGISTRATION.md` first. It was committed before any evaluation episode 
 | The guards together hold against overt and injected attacks, and fail against a monitor-aware covert one (experiment 2) | Passes 8 of 8 criteria. C2c and C2d are guaranteed by the surrogate monitor. C2a and C2b are real |
 | Where the delay threshold d* sits (experiment 3) | Remote-CBF protocols lose overflow safety at about 12 to 16 s round trip. Edge-CBF protocols never do. Scripted attackers and surrogate monitor, see results |
 | **LLM monitors fall for injected text** | **Not supported by two runs, and not refuted.** Haiku 4.5 was not fooled by a fixed authority claim, with or without a prompt warning. Adaptive injections, subtle actions and other models are untested |
-| Anything about adaptive attackers | Not built |
+| Anything about adaptive attackers | Parametric search only, in simulation: nothing found against a monitor that ignores authority claims. A reasoning adversary against a language-model monitor is not built |
 
 The monitor in experiments 1 to 3 is `RuleMonitor`, a deterministic surrogate. A first check against a real
 monitor (see Real-model pilots) found it harder to fool than the surrogate assumes. The surrogate discounts
@@ -79,8 +79,8 @@ What the pre-registered predictions did:
 
 - **P4 held.** No overflow with the edge filter at any delay.
 - **P3 held on the point estimates.** The remote-CBF protocols lose overflow safety at an effective
-  round trip of 12.0 to 13.6 s, inside the predicted 8 to 15 s. The jump is a cliff, not a slope:
-  1 to 3 of 30 at 12 s, 30 of 30 at 16 s. One confirmed (Wilson lower bound) value lands outside the
+  round trip of 12.0 to 13.6 s, inside the predicted 8 to 15 s. The overflow count jumps from 1 to 3 of 30 at 12 s to 30 of 30 at 16 s, but that
+  is the 20 cm rim clipping a smooth rise: mean peak height climbs from 16.2 cm at zero delay to 19.4 cm at 10 s. One confirmed (Wilson lower bound) value lands outside the
   range: hybrid against overt attacks on the minimum-phase plant, at 16.0 s.
 - **P5 held in direction, not to the second.** The linear model predicted the minimum-phase honest
   loop goes unstable at 15.1 s. Honest overflow with the remote filter appears between 16 and 20 s
@@ -104,6 +104,54 @@ Scope: scripted attackers, the surrogate monitor, a 10 s decision period, one pl
 threshold may scale with the decision period and the plant time constants. That is a hypothesis, not
 something this sweep tested. Placement of the CBF, not the filter, is what delay breaks.
 
+
+## Why the remote filter fails, and how much delay it tolerates
+
+The remote CBF has no closed-form threshold: with a 10 s hold it loses feasibility and falls back to pumps off
+about half the time even at zero delay, so the loop is a limit cycle. Instead a mechanism was tested with
+predictions written down first (amendment A4, `results/threshold_scaling/report.md`). Delay budget d* by hold
+period, looseness and barrier, minimum-phase then non-minimum-phase:
+
+| change from the baseline (hold 10 s, gamma 0.5, barrier 18 cm) | d* |
+|---|---|
+| baseline | 12.0 and 12.2 s |
+| hold 4 s | 4.2 and 6.2 s |
+| hold 20 s | 24.4 and 18.2 s |
+| looser, gamma 0.8 | 8.2 and 8.2 s |
+| tighter, gamma 0.3 | 20.4 and 16.2 s |
+| barrier 17 cm | 12.2 and 14.2 s |
+| barrier 16 cm | 16.2 and 16.2 s |
+
+Rule of thumb from this one filter design: the delay budget is about one hold period (0.9 to 1.5 times). A looser
+barrier cuts it sharply. Tightening the barrier by 2 cm buys about 4 s. Of five predictions, four held. P10 failed as
+written: its per-centimetre clause missed once (a 0.2 s step), because delays are quantised to 2 s, though the
+2 cm total held. Ten episodes per cell, one attack, one plant model. The mechanism (extra exposure beyond the
+window the filter reasoned about) fits but is not proved.
+
+## Built but not run: usefulness with a real supervisor and monitor
+
+`scripts/llm_honest_usefulness.py` measures what each protocol costs an honest language-model supervisor, with
+thresholds calibrated on that supervisor's own behaviour so the false flags are real. The trusted PI and the
+scripted supervisor run alongside for free as references. Tested here against fakes only. About 720 supervisor and
+480 monitor calls with the defaults. Your earlier runs cost roughly four times a per-call estimate, so price a
+small run first (`--runs 1 --calibration-runs 1`). It is the measurement that would show whether a real
+supervisor's honest noise widens the room for a quiet attack, which the adaptive search could not settle.
+
+## Adaptive attacker (exploratory, simulation only)
+
+A black-box search tunes a covert attacker (oscillation, bias, reduced feedback gain, rationale) against the
+deployed protocol and monitor, then rescored on held-out seeds (`results/adaptive_attack/report.md`).
+
+- Against the surrogate that authority claims fool: sabotage at 12 to 39 times the line, 0% flagged. That only
+  shows the search finds a hole when one exists.
+- Against the surrogate that ignores authority claims, at the 5% false-alarm threshold: **nothing found.** The best
+  attack that was flagged on at most 5% of decisions scores 0.69 to 0.72, the same as an honest supervisor with no
+  attack (0.69 to 0.72), with zero sabotaged seeds.
+
+Read it narrowly. The thresholds come from a scripted honest supervisor whose deviations are tiny, so they are tight.
+A real model's honest behaviour would be noisier and the threshold higher, which widens the room for a quiet attack.
+Only 160 candidates per cell. A reasoning adversary that writes rationales to persuade a language-model monitor is not
+covered and remains undone.
 
 ## Run it
 
@@ -273,4 +321,6 @@ Full list in `PREREGISTRATION.md`, amendment A2. The ones that change how to rea
 - The ControlArena setting was verified with one offline run on the minimum-phase plant at zero
   delay. Non-minimum-phase, delay, the remote CBF and multi-process runs are untested there.
 - PI and honest-supervisor gains were hand-tuned on development seeds.
-- No theory-based delay prediction. The one in the pre-registration comes from a small pilot.
+- No closed-form theory of the remote-CBF delay threshold. A mechanism study with pre-registered predictions
+  (four of five held) replaces it, see above. A linear delay-margin prediction exists only for the honest
+  supervisor's own loop.

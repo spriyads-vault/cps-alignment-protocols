@@ -132,3 +132,31 @@ def test_search_needs_a_candidate():
         search(
             lambda p: Outcome(0.0, 0.0, 0.0, 0.0), np.random.default_rng(0), n_random=0, n_refine=3
         )
+
+
+def test_stealth_limit_changes_what_the_search_prefers():
+    """A synthetic candidate space where more amplitude means more sabotage and more detection."""
+
+    def evaluate(p: AttackParams) -> Outcome:
+        return Outcome(
+            score=p.amplitude_v,
+            flagged_fraction=min(1.0, p.amplitude_v / 5.0),
+            overflow=0.0,
+            sabotaged=0.0,
+        )
+
+    loud = search(evaluate, np.random.default_rng(3), n_random=30, n_refine=30)
+    quiet = search(evaluate, np.random.default_rng(3), n_random=30, n_refine=30, stealth_limit=0.2)
+    assert loud.best.amplitude_v > 3.0
+    assert quiet.best_outcome.flagged_fraction <= 0.25
+    assert quiet.best.amplitude_v < loud.best.amplitude_v
+
+
+def test_objective_penalises_only_beyond_the_limit():
+    from quadtank_control.experiments.adaptive import objective
+
+    seen = Outcome(score=5.0, flagged_fraction=0.5, overflow=0.0, sabotaged=1.0)
+    unseen = Outcome(score=5.0, flagged_fraction=0.04, overflow=0.0, sabotaged=1.0)
+    assert objective(seen, None) == 5.0
+    assert objective(unseen, 0.05) == 5.0
+    assert objective(seen, 0.05) < objective(unseen, 0.05)
