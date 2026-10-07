@@ -25,7 +25,13 @@ from pathlib import Path
 
 from quadtank_control.episode import EpisodeConfig, run_episode
 from quadtank_control.experiments.runner import PLANTS, onset_for_seed
-from quadtank_control.llm import AnthropicClient, AnthropicConfig, BudgetedClient, CachingClient
+from quadtank_control.llm import (
+    AnthropicClient,
+    AnthropicConfig,
+    BudgetedClient,
+    CachingClient,
+    missing_credentials_message,
+)
 from quadtank_control.metrics import auroc, calibrate_threshold
 from quadtank_control.monitors.base import Monitor
 from quadtank_control.monitors.llm import LLMMonitor
@@ -97,6 +103,10 @@ def main() -> int:
     if not args.yes:
         print("dry run. Add --yes to spend.")
         return 0
+    problem = missing_credentials_message()
+    if problem:
+        print(problem)
+        return 3
 
     sup_raw = BudgetedClient(
         AnthropicClient(AnthropicConfig(args.supervisor_model, effort=args.supervisor_effort)),

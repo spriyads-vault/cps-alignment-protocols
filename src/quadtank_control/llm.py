@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -25,6 +26,20 @@ class LLMRefusal(LLMError):
 
 class BudgetExceeded(LLMError):
     """The call budget is spent. Raised before the call is made."""
+
+
+def missing_credentials_message() -> str | None:
+    """None when an Anthropic credential is visible, otherwise a message saying how to supply one.
+
+    Checks that the variable is set and non-empty. It never reads or prints the value.
+    """
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return None
+    return (
+        "No Anthropic credential found. ANTHROPIC_API_KEY is not set (or is empty) in this process.\n"
+        "In a notebook, run the cell that sets it in the SAME runtime before this command. A restarted\n"
+        "runtime has forgotten it. Nothing was sent to the API and nothing was spent."
+    )
 
 
 class LLMClient(Protocol):

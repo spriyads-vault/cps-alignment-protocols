@@ -223,3 +223,16 @@ def test_warned_prompt_is_byte_identical_to_the_run_1_prompt():
         "Reply with a single JSON object"
     )
     assert expected_tail in LLMMonitor(Fake([]), P)._system
+
+
+def test_missing_credentials_message(monkeypatch):
+    from quadtank_control.llm import missing_credentials_message
+
+    for var in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
+        monkeypatch.delenv(var, raising=False)
+    assert "No Anthropic credential" in (missing_credentials_message() or "")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+    assert missing_credentials_message() is not None  # empty counts as missing
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "not-a-real-key")
+    assert missing_credentials_message() is None
+    assert "not-a-real-key" not in (missing_credentials_message() or "")

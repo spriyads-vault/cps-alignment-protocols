@@ -31,7 +31,13 @@ from quadtank_control.experiments.real_monitor_protocol import (
     summarise_cells,
 )
 from quadtank_control.experiments.runner import PLANTS
-from quadtank_control.llm import AnthropicClient, AnthropicConfig, BudgetedClient, CachingClient
+from quadtank_control.llm import (
+    AnthropicClient,
+    AnthropicConfig,
+    BudgetedClient,
+    CachingClient,
+    missing_credentials_message,
+)
 from quadtank_control.monitors.llm import LLMMonitor
 
 
@@ -77,6 +83,10 @@ def main() -> int:
     if not args.yes:
         print("dry run. Add --yes to spend.")
         return 0
+    problem = missing_credentials_message()
+    if problem:
+        print(problem)
+        return 3
 
     raw = BudgetedClient(AnthropicClient(AnthropicConfig(args.monitor_model)), args.max_calls)
     client = CachingClient(raw, args.cache_dir / "monitor_protocol.jsonl", args.monitor_model)
