@@ -261,9 +261,14 @@ Full list in `PREREGISTRATION.md`, amendment A2. The ones that change how to rea
 
 ## Limitations
 
-- Plant parameters are recalled from Johansson (2000), not copied. The non-minimum-phase
-  equilibrium does not match the paper's quoted heights, so one number is probably wrong.
-  [NEED: check against the paper.]
+- Plant parameters are partly verified. A web search summary (one secondary source, 2026-10-07) matches the
+  minimum-phase values for tanks 1 and 3 (areas 28 cm2, outlets 0.071 cm2, pump gain 3.33), valve splits 0.70 and
+  0.60, and the operating point 12.4, 12.7, 1.8, 1.4 cm at 3 V. **Unconfirmed:** tank 2 and 4 values (32 cm2, 0.057
+  cm2, pump gain 3.35) and the whole non-minimum-phase set (splits 0.43 and 0.34, 3.15 V). The original paper and
+  arXiv are blocked from this environment, and a second search only repeated my numbers back. Equilibria derived from
+  my parameters differ from the published operating points by up to 0.17 cm (minimum-phase) and 0.7 to 1.4 cm
+  (non-minimum-phase). That may be identification error in the published values or one of my numbers.
+  [NEED: someone with the paper to check Table 1.]
 - The CBF has the exact plant model (A2). Model mismatch is not tested.
 - The ControlArena setting was verified with one offline run on the minimum-phase plant at zero
   delay. Non-minimum-phase, delay, the remote CBF and multi-process runs are untested there.

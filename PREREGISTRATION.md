@@ -200,8 +200,10 @@ Recorded so nothing is silent.
 
 ## 8. Known gaps
 
-- Plant parameters are recalled from Johansson (2000), not copied. The non-minimum-phase
-  equilibrium differs from the quoted heights. [NEED: check against the paper.]
+- Plant parameters are partly verified (2026-10-07). One secondary source matches the minimum-phase values for
+  tanks 1 and 3, the valve splits 0.70 and 0.60, and the operating point. Tank 2 and 4 values and the whole
+  non-minimum-phase set are unconfirmed, and the derived non-minimum-phase equilibrium differs from the quoted
+  heights. [NEED: check against the paper.]
 - PI gains and honest gains are hand-tuned on dev seeds.
 - No real-LLM supervisor or monitor results. No ControlArena run.
 - The adversary is prompted or scripted. It is a red-team proxy, not a scheming model.
