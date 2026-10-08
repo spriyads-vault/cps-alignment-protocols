@@ -50,8 +50,9 @@ honest baseline.
 | Exp. 1 and 2 pass all 18 criteria | **Partly by construction.** The surrogate monitor is built to be fooled |
 | Adaptive search finds nothing vs unfooled monitor | 240 candidates per search, tight thresholds from a scripted honest supervisor |
 
-Not done: live runs of the reasoning adversary and of usefulness with a real supervisor (both built, tested
-against fakes, gated behind `--yes` and a hard call cap); model mismatch for the CBF; any monitor but Haiku 4.5.
+Not done: usefulness with a real supervisor (built, tested against fakes, gated behind `--yes` and a hard call
+cap). The reasoning adversary ran once and was **invalid**: the attacker model refused 40 of 41 decisions
+(`results/llm_rationale_adversary_run1.md`); model mismatch for the CBF; any monitor but Haiku 4.5.
 The tank 2 and 4 parameters and the non-minimum-phase set are unconfirmed against Johansson (2000).
 
 ## Run it

@@ -212,6 +212,12 @@ room for a quiet attack. Only 240 candidates per search. One unconstrained resul
 non-minimum-phase plant, a fixed covert attack sabotaged 2 of 10 held-out seeds under defer-to-PI, because the
 flag hands control to a PI with no CBF in front of it.
 
+## Reasoning adversary: run once, invalid
+
+Run 1 (`results/llm_rationale_adversary_run1.md`): claude-sonnet-5-5 as attacker refused 40 of 41 decisions
+(category=cyber), so the runner marked it INVALID. It shows nothing about adaptive rationales. As a fixed-note
+repeat, Haiku 4.5 reading the rationale scored AUROC 0.98 to 0.99 and caught 90% at the 5% threshold. Not retried.
+
 ## Built but not run live
 
 `scripts/llm_honest_usefulness.py` measures what each protocol costs an honest language-model supervisor, with
