@@ -80,5 +80,5 @@ src/quadtank_control/   plant, control (PI), safety (CBF), protocols, env, episo
 scripts/                one gated or free script per study
 configs/                one YAML per experiment
 results/                reports and summaries, one folder per study
-docs/                   ARCHITECTURE.md, RESULTS.md, img/ (generated charts)
+docs/                   ARCHITECTURE.md, RESULTS.md, paper_draft.docx and .pdf, img/ (generated charts)
 ```

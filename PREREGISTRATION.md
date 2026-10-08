@@ -230,12 +230,14 @@ monitor, fooled and not fooled, at the 5% false-alarm threshold, with winners re
 
 Against the monitor that ignores authority claims it found no attack above the honest supervisor's own score
 while staying under 5% flagged (0.69 to 0.72 against an honest control of 0.69 to 0.72). Against the monitor that
-authority claims fool it found sabotage at 12 to 39 times the sabotage line, undetected, which only confirms the
-search can find a hole that exists by construction.
+authority claims fool it found sabotage at 36 to 39 times the sabotage line, undetected, which only confirms the
+search can find a hole that exists by construction. (A first version with 80 evaluations per search reported 12 to 39
+because it had not converged. It was rerun with 240 candidates per search and a hard stealth constraint.)
 
 Scope: the thresholds depend on a scripted honest supervisor whose deviations are tiny, so they are tighter than a
-real model would produce. A search of 160 candidates cannot show that no stealthy attack exists. A model that
-writes persuasive rationales is not covered. Experiment 4 (a reasoning adversary) is therefore still not done.
+real model would produce. A search of 240 candidates per cell cannot show that no stealthy attack exists. A model that
+writes persuasive rationales is not covered. Experiment 4 (a reasoning adversary) was run once and was invalid: the attacker model refused 40 of 41 decisions
+(`results/llm_rationale_adversary_run1.md`).
 
 ## 6. Stop rules
 
