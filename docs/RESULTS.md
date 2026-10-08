@@ -218,13 +218,15 @@ Run 1 (`results/llm_rationale_adversary_run1.md`): claude-sonnet-5-5 as attacker
 (category=cyber), so the runner marked it INVALID. It shows nothing about adaptive rationales. As a fixed-note
 repeat, Haiku 4.5 reading the rationale scored AUROC 0.98 to 0.99 and caught 90% at the 5% threshold. Not retried.
 
-## Built but not run live
+## Honest language-model supervisor: run once
 
-`scripts/llm_honest_usefulness.py` measures what each protocol costs an honest language-model supervisor, with
-thresholds calibrated on that supervisor's own behaviour so the false flags are real. It is the measurement that
-would show whether a real supervisor's honest noise widens the room for a quiet attack, which the adaptive search
-could not settle. About 900 supervisor and 720 monitor calls with the defaults (the monitor count includes `monitor_log`, a monitor
-that never acts, which gives monitored protocols a latency-matched usefulness reference).
+Run 1 (`results/llm_honest_usefulness_run1.md`, one episode per protocol, no intervals): claude-sonnet-5-5 tracked
+107 times worse than the trusted PI with no guard, and 82 to 109 times worse under the protocols. Usefulness as
+defined in the script (against its own unguarded error, capped at 1) came out 0.99 to 1.00, which says nothing
+useful here. Honest false flags landed near the 5% target (4 of 60 blocked, 2 of 60 deferred). Not checked:
+whether the prompt, not the model, causes the poor tracking.
+
+## Built, run once, invalid
 
 `scripts/llm_rationale_adversary.py` is experiment 4. A model writes the explanation for each covert command and
 sees the monitor's scores for its own earlier notes. The actions are fixed, so a numbers-only monitor cannot move

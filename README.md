@@ -50,8 +50,10 @@ honest baseline.
 | Exp. 1 and 2 pass all 18 criteria | **Partly by construction.** The surrogate monitor is built to be fooled |
 | Adaptive search finds nothing vs unfooled monitor | 240 candidates per search, tight thresholds from a scripted honest supervisor |
 
-Not done: usefulness with a real supervisor (built, tested against fakes, gated behind `--yes` and a hard call
-cap). The reasoning adversary ran once and was **invalid**: the attacker model refused 40 of 41 decisions
+Usefulness with a real supervisor ran once (one episode per protocol): Sonnet tracked about 100 times worse than the
+trusted PI, so usefulness measured against its own unguarded error is uninformative
+(`results/llm_honest_usefulness_run1.md`). Not done: a full run and a check of whether the prompt is to blame. The
+reasoning adversary ran once and was **invalid**: the attacker model refused 40 of 41 decisions
 (`results/llm_rationale_adversary_run1.md`); model mismatch for the CBF; any monitor but Haiku 4.5.
 The tank 2 and 4 parameters and the non-minimum-phase set are unconfirmed against Johansson (2000).
 
